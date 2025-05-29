@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=55868&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>My ML Portfolio</title>
+<meta name="keywords" content="">
+<meta name="description" content="Rotatory-Positional-Embeddings
+Original Paper:- https://arxiv.org/abs/2104.09864
+https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/
+https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794
+https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed
+
+
+When we were discussing about Positional Embeddings mentioned in foundational paper &ldquo;Attention is All You Need&rdquo; , we got to know the
+importance of positional encodings , also we got to know the two different approaches Learned &amp; Fixed though the paper preferred
+fixed positional embeddings over learned embeddings, the later results and metrics showed that fixed positional embeddings could not
+accurately process the relation ship between different words or tokens , especially when the sequence whose length is more than sequence
+encoutered during training.">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:55868/transformer/positionalembeddings/rope/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:55868/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:55868/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:55868/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:55868/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:55868/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:55868/transformer/positionalembeddings/rope/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:55868/" accesskey="h" title="My ML Portfolio (Alt + H)">My ML Portfolio</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:55868/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:55868/transformer/">Transformer Models</a>&nbsp;»&nbsp;<a href="http://localhost:55868/transformer/positionalembeddings/">Positional Embeddings</a></div>
+    <h1 class="post-title entry-hint-parent">
+      
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#rotatory-positional-embeddings" aria-label="Rotatory-Positional-Embeddings">Rotatory-Positional-Embeddings</a></li>
+                <li>
+                    <a href="#pytorch-implementation" aria-label="Pytorch Implementation">Pytorch Implementation</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="rotatory-positional-embeddings">Rotatory-Positional-Embeddings<a hidden class="anchor" aria-hidden="true" href="#rotatory-positional-embeddings">#</a></h1>
+<p>Original Paper:- <a href="https://arxiv.org/abs/2104.09864">https://arxiv.org/abs/2104.09864</a>
+<a href="https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/">https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/</a>
+<a href="https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794">https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794</a>
+<a href="https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed">https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed</a></p>
+<ul>
+<li>
+<p>When we were discussing about Positional Embeddings mentioned in foundational paper &ldquo;Attention is All You Need&rdquo; , we got to know the
+importance of positional encodings , also we got to know the two different approaches <code>Learned</code> &amp; <code>Fixed</code> though the paper preferred
+fixed positional embeddings over learned embeddings, the later results and metrics showed that fixed positional embeddings could not
+accurately process the relation ship between different words or tokens , especially when the sequence whose length is more than sequence
+encoutered during training.</p>
+</li>
+<li>
+<p>One more problem with Fixed Positional Embeddings is as we are adding the positional information which is of the size of the embedding
+dimension like <strong>$x_{m}$ + PE</strong>, the way of encoding positional information helps to capture the positional information of the token
+when we are adding these encodings whose dimension is equal to the dimension of the Embedding , the information generated by Embeddings
+might be changing the original Embeddings which we would like to avoid , in Machine Learning we generally don&rsquo;t want to tamper with input data
+we will try to pass the input as is possible except the feature engineering to derive more features we don&rsquo;t want to modify the input data.
+the positinal information that we are adding in fixed embeddings they don&rsquo;t have any pattern or no parameters involved in training , if the
+same token appears at different positions in the same sentence or in different sentences across batch models are not able to generalize the
+information</p>
+</li>
+</ul>
+<p>Inorder to address the above mentioned problems we need an approach that captures the relative information of the tokens which would be
+helpful for Self Attention process to capture the relation ship between the tokens using the positional information of them, without
+modifying the Embeddings, hence the birth of Relative Position Embeddings, though techincally we can capture the relative position of the
+embeddings using <em>N</em>N* matrix , this is computationally expensive. There are also few other issues with pure relative positional embeddings
+reasearchers came up with Rotary Positional Embeddings</p>
+<p>Every data that we process in Machine/Deep Learning is considered a vector , like each feature is a vector  &amp; output is a vector , a vector
+has two components radial &amp; angle components, radial component represents the magnitude of vector , angle represents angle it makes with the
+plane, rotary embeddings works on this principles of Complex Numbers and Operations on these vectors. Below is the math behind the Rotary
+Positional Embeddings</p>
+<ul>
+<li>
+<p>Math Behind Rotary Positional Embeddings</p>
+<p>$i^2 $ = -1 (Complex Number System)</p>
+<p>When we multiply Complex Number by i , it results in rotating it by angle 90 degrees, here we represent our Embedding vector in Complex
+space and multiply it be rotational matrix the anle of the vector changes. Below is the equations of math how this works</p>
+</li>
+<li>
+<p><strong>Step-1</strong>:-</p>
+</li>
+</ul>
+<!-- raw HTML omitted -->
+<p><strong>cosA= x/r</strong> , <strong>sinA= y/r</strong></p>
+<p>$$
+\begin{bmatrix}
+x\
+y\
+\end{bmatrix} =
+\begin{bmatrix}
+rcosA\
+rsinA\
+\end{bmatrix}
+$$</p>
+<ul>
+<li><strong>Step-2</strong>:-
+If we rotate the Vector P by able $θ$ , The vector $P$ becomes $P&rsquo;$, Vector $P&rsquo;$ has co-ordinates <strong>(x&rsquo;,y&rsquo;)</strong></li>
+</ul>
+<p>$$
+\begin{bmatrix}
+x&rsquo;\
+y&rsquo;\
+\end{bmatrix} =
+\begin{bmatrix}
+rcos(A+θ)\
+rsin(A+θ)\
+\end{bmatrix}
+$$</p>
+<ul>
+<li><strong>Step-3</strong>:-
+With the Formulae mentioned above we can re-write $P'$</li>
+</ul>
+<p>$$
+\begin{bmatrix}
+x&rsquo;\
+y&rsquo;\
+\end{bmatrix} =
+\begin{bmatrix}
+r (cosA cosθ - sinA sinθ)\
+r (sinA cosθ + cosA sinθ)\
+\end{bmatrix}
+$$</p>
+<p>$$
+\begin{bmatrix}
+x&rsquo;\
+y&rsquo;\
+\end{bmatrix} =
+\begin{bmatrix}
+r cosA cosθ - rsinA sinθ\
+r sinA cosθ + r cosA sinθ\
+\end{bmatrix}
+$$</p>
+<ul>
+<li>From <strong>Step-1</strong>, we know <strong>x=rCosA</strong>, <strong>y=rSinA</strong>, if we apply this for $P&rsquo;$ can be re-written as</li>
+</ul>
+<p>$$
+\begin{bmatrix}
+x&rsquo;\
+y&rsquo;\
+\end{bmatrix} =
+\begin{bmatrix}
+x cosθ - y sinθ\
+y cosθ + x sinθ\
+\end{bmatrix}
+$$</p>
+<p>$$
+\begin{bmatrix} x&rsquo; \
+y&rsquo; \end{bmatrix} =
+\begin{bmatrix} \cos\theta &amp; -\sin\theta \
+\sin\theta &amp; \cos\theta \end{bmatrix}
+\begin{bmatrix} x \
+y \end{bmatrix}
+$$</p>
+<ul>
+<li>
+<p><strong>Step-4</strong>:-
+From the above we can observe that when we multiply vector <strong>(x,y)</strong> with Rotation matrix , we can get vector <strong>(x&rsquo;,y&rsquo;)</strong> which is rotated by
+angle θ.Hence the matrix below is known as rotation matrix , this is also the populary known as Euler&rsquo; Formula</p>
+<p><strong>Euler&rsquo;s Formula</strong> <strong>$$e^i\theta = cos\theta + isin\theta$$</strong></p>
+</li>
+</ul>
+<p>$$R(θ) =
+\begin{bmatrix} \cos\theta &amp; -\sin\theta \\
+\sin\theta &amp; \cos\theta \end{bmatrix}
+$$</p>
+<p>One importatnt point note from here is that we are rotating the vector, the magnitude of the vector remains the same,we are only shifting the vector in the complex <strong>2D</strong> space, this is an important property require for us so that we don&rsquo;t change the original value of the Embeddings.</p>
+<p>If we extend this two two vectors <strong>P</strong> &amp; <strong>Q</strong> which makes angle <strong>$\theta_{1}$</strong> &amp; <strong>$\theta_{2}$</strong> with Plane respectively, if we perform dot product(Inner Product) between these two P.Q</p>
+<p>$$P =
+\begin{bmatrix} \cos\theta_{1} &amp; -\sin\theta_{1}\\
+\sin\theta_{1} &amp; \cos\theta_{1} \end{bmatrix}
+\begin{bmatrix} x_{1} \
+y_{1} \end{bmatrix}
+\quad
+Q =
+\begin{bmatrix} \cos\theta_{2} &amp; -\sin\theta_{2} \\
+\sin\theta_{2} &amp; \cos\theta_{2} \end{bmatrix}
+\begin{bmatrix} x_{2} \
+y_{2} \end{bmatrix}
+$$</p>
+<p>Let us re-write P and Q as below</p>
+<p>$$
+P =
+\begin{bmatrix}
+x_{1} \cos\theta_{1} - y_{1} \sin\theta_{1} \\
+x_{1} \sin\theta_{1} + y_{1} \cos\theta_{1}
+\end{bmatrix}
+\quad
+Q =
+\begin{bmatrix}
+x_{2} \cos\theta_{2} - y_{2} \sin\theta_{2} \\
+x_{2} \sin\theta_{2} + y_{2} \cos\theta_{2}
+\end{bmatrix}
+$$</p>
+<p>Dot product between them is $P^T$ .Q</p>
+<p>$$
+P =
+\begin{bmatrix}
+x_{1} \cos\theta_{1} - y_{1} \sin\theta_{1} &amp; x_{1} \sin\theta_{1} + y_{1} \cos\theta_{1}
+\end{bmatrix}
+\quad
+Q =
+\begin{bmatrix}
+x_{2} \cos\theta_{2} - y_{2} \sin\theta_{2} \\
+x_{2} \sin\theta_{2} + y_{2} \cos\theta_{2}
+\end{bmatrix}
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} (x_{1}cos\theta_{1} -y_{1}sin\theta_{1}) * (x_{2}cos\theta_{2} -y_{2}sin\theta_{2}) +  (x_{1}sin\theta_{1} + y_{1}cos\theta_{1}) *
+(x_{2}sin\theta_{2} + y_{2}cos\theta_{2}
+\end{bmatrix})
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} (x_{1} x_{2} cos\theta_{1} cos\theta_{2} - x_{1} y_{2} cos\theta_{1}sin\theta_{2} -  x_{2} y_{1}sin\theta_{1} cos\theta_{2} + y_{1} y_{2} sin\theta_{1} sin\theta_{2}) +  (x_{1} x_{2} sin\theta_{1} sin\theta_{2} + x_{1} y_{2} sin\theta_{1} cos \theta_{2} + x_{2} y_{1} cos\theta_{1} sin\theta_{2} + y_{1} y_{2} cos\theta_{1} cos\theta_{2}) \end{bmatrix}
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} ( x_{1} x_{2} (cos\theta_{1} cos\theta_{2} + sin\theta_{1} sin\theta_{2}) + y_{1} y_{2} (cos\theta_{1} cos\theta_{2} + sin\theta_{1} sin\theta_{2})  + x_{1} y_{2} (sin\theta_{1} cos\theta_{2} - cos\theta_{1}sin\theta_{2}) -  x_{2} y_{1} (sin\theta_{1} cos\theta_{2} - cos\theta_{1} sin\theta_{2}) \end{bmatrix}
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} ( x_{1} x_{2} cos(\theta_{1}-\theta_{2}) + y_{1} y_{2} cos(\theta_{1}-\theta_{2}) + x_{1} y_{2} (sin(\theta_{1}- \theta_{2}) -  x_{2} y_{1} (sin(\theta_{1}-\theta_{2}) \end{bmatrix}
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} ( (x_{1} x_{2} + y_{1} y_{2}) cos(\theta_{1}-\theta_{2})  + (x_{1} y_{2} -  x_{2} y_{1}) (sin(\theta_{1}- \theta_{2})  \end{bmatrix}
+$$</p>
+<p>$$P^T.Q =
+\begin{bmatrix} ( (x_{1} x_{2} + y_{1} y_{2}) cos(\theta_{1}-\theta_{2})  + (x_{2} y_{1} -x_{1} y_{2}) (- sin(\theta_{1}- \theta_{2})  \end{bmatrix}
+$$</p>
+<p><strong>The above can be re-written in terms of Rotation Matrix as below</strong> ,<strong>from this we can infer when we perform dot product between two vectors
+the relative position between them is captured which is represented by</strong> $\theta_{1}-\theta_{2}$ this property is required when we calculate
+Selft Attention we perform Dot product between Q(Query) &amp; K(Key) vectors this helps in capturing the relation ship between the relative positions
+of the tokens</p>
+<p>$$
+P^T \cdot Q =
+\begin{bmatrix} x_{1} &amp; y_{1} \end{bmatrix}
+\begin{bmatrix}
+\cos(\theta_{1} - \theta_{2}) &amp; -\sin(\theta_{1} - \theta_{2}) \\
+\sin(\theta_{1} - \theta_{2}) &amp; \cos(\theta_{1} - \theta_{2})
+\end{bmatrix}
+\begin{bmatrix} x_{2} \
+y_{2} \end{bmatrix}
+$$</p>
+<p>All of this what we discussed is applicable in 2Dimensional Space, but in practice the LLM have Embedding Dimensions of size 2048 &amp; 3092 etc&hellip;
+the Rotary Embedding paper researchers applied the above principals of rotating the vector by multiplying the Rotation matrix R($\theta$) with the pairs of embeddings</p>
+<p>For simplicity let us consider the sentence which has 6 tokens , each token has embdding of size 8. As we have the solution to find the relative
+Embeddings in 2D space, we convert this to 2D by dividing the size of the Embedding dimensions by 2 which is 8/2 = 4 , hence we will convert them to 4 pairs of Embeddings and rotate each pair by certain angle, in our current case of 4 pairs, let us consider below vector</p>
+<p>$\bar{x}$ = $\left[ x_{1}, x_{2}, x_{3}, x_{4}, x_{5}, x_{6}, x_{7}, x_{8} \right]$</p>
+<p>we have 4 Pairs like below</p>
+<p>Pair 1:- $\left[ x_{1}, x_{2}\right]$ <br>
+Pair 2:- $\left[x_{3}, x_{4}\right]$ <br>
+Pair 3:-  $\left[x_{5}, x_{6}\right]$ <br>
+Pair 4:-  $\left[x_{7}, x_{8}\right]$</p>
+<p>Now let us include the position of the token into equation, let us generalize this for any position-<strong>m</strong> , each pair has its own angle, hence we will have d/2 angles, <strong>m</strong> will be same for all the pairs of the token, as mentioned earlier if we have 6 tokens when we are applying rotation for all the pairs of the token <strong>1</strong>, <strong>m</strong> would be <strong>1</strong>, we will also look at the formulae for $\theta$</p>
+<p>$$
+RoPE(x_{m}^1 , x_{m}^2) =
+\begin{bmatrix}
+\cos(m\theta) &amp; -\sin(m\theta) \\
+\sin(m\theta) &amp; \cos(m\theta)
+\end{bmatrix}
+\begin{bmatrix}
+x_{m}^1 \\
+x_{m}^2
+\end{bmatrix}
+$$</p>
+<p>$$
+RoPE(x_{m}^1 , x_{m}^2) =
+\begin{bmatrix} cosm\theta_{1} &amp; -sinm\theta_{1} \\
+sinm\theta_{1} &amp; cosm\theta_{1} \end{bmatrix}
+\begin{bmatrix} x_{m}^1 \\
+x_{m}^2 \end{bmatrix}
+\quad
+RoPE(x_{m}^3 , x_{m}^4) =
+\begin{bmatrix} cosm\theta_{2} &amp; -sinm\theta_{2} \\
+sinm\theta_{2} &amp; cosm\theta_{2} \end{bmatrix}
+\begin{bmatrix} x_{m}^3 \\
+x_{m}^4 \end{bmatrix}
+\quad
+RoPE(x_{m}^5 , x_{m}^6) =
+\begin{bmatrix} cosm\theta_{3} &amp; -sinm\theta_{3} \\
+sinm\theta_{3} &amp; cosm\theta_{3} \end{bmatrix}
+\begin{bmatrix} x_{m}^5 \\
+x_{m}^6 \end{bmatrix}
+\quad
+RoPE(x_{m}^7 , x_{m}^8) =
+\begin{bmatrix} cosm\theta_{4} &amp; -sinm\theta_{4} \\
+sinm\theta_{4} &amp; cosm\theta_{4} \end{bmatrix}
+\begin{bmatrix} x_{m}^7 \\
+x_{m}^8 \end{bmatrix}
+$$</p>
+<p>The above represents calculating Embeddings for Q (Query Matrix), we will understand more about Query matrices in Self Attention, Self Attention also needs K (Key Matrix) , Dot Product between these two matrices gives us the contextual relation ship between the Query vector &amp; Key Vector which represents different tokens in sequence, for us to multiply we should also derive the same RoPE Embeddings for Key matrices , let us represent the position of token as <strong>n</strong> in this case and angle as $\theta$</p>
+<p>$$
+RoPE(x_{n}^1 , x_{n}^2) =
+\begin{bmatrix} cosn\theta &amp; -sinn\theta \\
+sinn\theta &amp; cosn\theta \end{bmatrix}
+\begin{bmatrix} x_{n}^1 \\
+x_{n}^2 \end{bmatrix}
+$$</p>
+<p>Similarly the RoPE for Key vectors is also calculated in 4 Pairs as the embeddings size is 8 and we divide them by 2.</p>
+<p>$$
+RoPE(x_{n}^1 , x_{n}^2) =
+\begin{bmatrix} cosn\theta_{1} &amp; -sinn\theta_{1} \\
+sinn\theta_{1} &amp; cosn\theta_{1} \end{bmatrix}
+\begin{bmatrix} x_{n}^1 \\
+x_{n}^2 \end{bmatrix}
+\quad
+RoPE(x_{n}^3 , x_{n}^4) =
+\begin{bmatrix} cosn\theta_{2} &amp; -sinn\theta_{2} \\
+sinn\theta_{2} &amp; cosn\theta_{2} \end{bmatrix}
+\begin{bmatrix} x_{n}^3 \\
+x_{n}^4 \end{bmatrix}
+\quad
+RoPE(x_{n}^5 , x_{n}^6) =
+\begin{bmatrix} cosn\theta_{3} &amp; -sinn\theta_{3} \\
+sinn\theta_{3} &amp; cosn\theta_{3} \end{bmatrix}
+\begin{bmatrix} x_{n}^5 \\
+x_{n}^6 \end{bmatrix}
+\quad
+RoPE(x_{n}^7 , x_{n}^8) =
+\begin{bmatrix} cosn\theta_{4} &amp; -sinn\theta_{4} \\
+sinn\theta_{4} &amp; cosn\theta_{4} \end{bmatrix}
+\begin{bmatrix} x_{n}^7 \\
+x_{n}^8 \end{bmatrix}
+$$</p>
+<p>Query &amp; Key Vectors and their rotations are represented in the Paper as below</p>
+<!-- raw HTML omitted -->
+<p>$$
+f_{q} (x_{m}, m) = (W_{q} \cdot x_{m}) e^{im\theta}
+\quad \quad
+f_{k} (x_{n}, n) = (W_{k} \cdot x_{n}) e^{in\theta}
+$$</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>$$
+q_{m} = W_{q} \cdot x_{m} \quad \quad \quad k_{n} = W_{k} \cdot x_{n}
+$$</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>$$
+e^{im\theta} = R_{m,\theta} \quad \quad e^{in\theta} = R_{n,\theta}
+$$</p>
+<!-- raw HTML omitted -->
+<p>From <strong>Euler&rsquo;s Formulae</strong> :-</p>
+<p>$$
+e^i\theta = cos\theta + i*sin\theta
+$$</p>
+<p>Also we can derive that</p>
+<p>$$
+cos\theta + i*sin\theta =
+\begin{bmatrix}
+cos\theta &amp; - ysin\theta\\
+cos\theta &amp; sin\theta\\
+\end{bmatrix}
+$$</p>
+<p>we can apply this for $R_{m,\theta}$  &amp; $R_{n,\theta}$</p>
+<p>We use these two calculate the Attention Scores using $q_{m}$.$k_{n}$</p>
+<p>$$q_{m}.k_{n} = (R_{m,\theta}* q ) (R_{n,\theta}*k) = ( q^T R_{m,\theta} R_{n,\theta} k) $$</p>
+<p>Earlier we saw multiplication between two vectors which are rotated by $\theta_{1}$ &amp; $\theta_{2}$ results in rotation matrix of angle $\theta_{1}-\theta_{2}$, we can apply the same for our rotation matrix</p>
+<p>$$\quad \quad \quad R_{m,\theta} * R_{n,\theta} = R_{m-n,\theta}$$</p>
+<p>$$
+Attention Score  =
+q^T \quad R_{m}^T R_{n} k_= q^T \begin{bmatrix}
+cos(m-n)\theta &amp; - sin(m-n)\theta\\
+cos(m-n)\theta &amp; sin(m-n)\theta\\
+\end{bmatrix}
+\quad
+k
+$$</p>
+<p>The above represents the relative positions between Query &amp; Key Vectors (Token Embeddings)</p>
+<p><strong>Rotation for Higher Dimensions is represented in Blocks of 2Dimensional pairs</strong></p>
+<p><img alt="image" loading="lazy" src="https://github.com/user-attachments/assets/a1f6cb96-7181-42e6-b315-ac70d799e762"></p>
+<p>The above representation is sparse in nature as only 2 dimensions are active at a given point of time , the paper recommends computationally efficient rotatory matrix multiplication using below representation</p>
+<p><img alt="image" loading="lazy" src="https://github.com/user-attachments/assets/59cea45c-f95a-44e5-9843-1e6f42084ddb"></p>
+<p>Paper also mentioned the formulae for calculating theta based on each index pair of embedding dimension , where <em>i</em> represents the index of the pair, while calculating the angle the position of the token and index of the pair both play a role in determining the angle</p>
+<p>$\theta_{i} = 10000^{\frac{2(i-1)}{d}}$</p>
+<h1 id="pytorch-implementation">Pytorch Implementation<a hidden class="anchor" aria-hidden="true" href="#pytorch-implementation">#</a></h1>
+<p>For step by step explanation please refer to colab <a href="https://github.com/varadasantosh/deep-learning-notes/blob/tensorflow/Rotary_Embeddings_Implementation.ipynb">notebook</a></p>
+<pre tabindex="0"><code>import torch
+
+def determine_rotation_theta(max_seqlen, d_model):
+
+  &#34;&#34;&#34; This method takes Sequence Length , Dimensions of Embeddings to calculate the angle for
+      each position in the sequence
+  &#34;&#34;&#34;
+  theta = 1/torch.pow(10000,torch.arange(0,d_model,2)/d_model)
+  positions = torch.arange(0,max_seqlen)
+  position_theta = positions.unsqueeze(1) * theta.unsqueeze(0)
+  position_theta = torch.stack((position_theta.cos(),position_theta.sin()),dim=2).flatten(1)
+  return  position_theta
+
+def calc_rotary_embeddings(embeddings):
+
+  &#34;&#34;&#34;
+      This method takes embeddings, it can be of any dimenesion but in transformer implementaions this takes
+      the dimension of (batch,sequence_len,embed_dimension), it rotates the embedding pairs by certain angle
+      it does not change the magnitude of the dimension, but rotates a vector
+  &#34;&#34;&#34;
+
+  batch_size,max_seqlen,d_model= embeddings.shape
+  rotation_theta = determine_rotation_theta(max_seqlen,d_model)
+  cos_theta = rotation_theta[...,0::2]
+  sin_theta = rotation_theta[...,1::2]
+
+  embeddings[...,0::2] =  embeddings[...,0::2] * cos_theta  - embeddings[...,1::2] * sin_theta
+  embeddings[...,1::2] =  embeddings[...,0::2] * sin_theta  + embeddings[...,1::2] * cos_theta
+  return embeddings
+</code></pre><p>Below image illustrate the shape of the tensor passed as input and the output after applying roatry embeddings</p>
+<!-- raw HTML omitted -->
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:55868/">My ML Portfolio</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

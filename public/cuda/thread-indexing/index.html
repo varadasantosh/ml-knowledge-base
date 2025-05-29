@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=55868&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>GPU Thread Hierarchy and Indexing | My ML Portfolio</title>
+<meta name="keywords" content="">
+<meta name="description" content="GPU Thread Hierarchy and Indexing - My ML Portfolio">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:55868/cuda/thread-indexing/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:55868/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:55868/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:55868/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:55868/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:55868/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:55868/cuda/thread-indexing/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:55868/" accesskey="h" title="My ML Portfolio (Alt + H)">My ML Portfolio</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:55868/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:55868/cuda/">CUDA Programming</a></div>
+    <h1 class="post-title entry-hint-parent">
+      GPU Thread Hierarchy and Indexing
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#thread-indexing--1d-grid-and-1d-block" aria-label="Thread Indexing – 1D Grid and 1D Block">Thread Indexing – 1D Grid and 1D Block</a><ul>
+                        
+                <li>
+                    <a href="#local-thread-index" aria-label="Local Thread Index">Local Thread Index</a></li>
+                <li>
+                    <a href="#global-threadindex" aria-label="Global ThreadIndex">Global ThreadIndex</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing--2d-grid-and-1d-block" aria-label="Thread Indexing – 2D Grid and 1D Block">Thread Indexing – 2D Grid and 1D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-" aria-label="Grid Layout :">Grid Layout :</a></li>
+                <li>
+                    <a href="#global-block-id-calculation" aria-label="Global Block ID Calculation">Global Block ID Calculation</a></li>
+                <li>
+                    <a href="#local-thread-indexing" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-thread-index-calculation" aria-label="Global Thread Index Calculation">Global Thread Index Calculation</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing--3d-grid-and-1d-block" aria-label="Thread Indexing – 3D Grid and 1D Block">Thread Indexing – 3D Grid and 1D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout" aria-label="Grid Layout:">Grid Layout:</a></li>
+                <li>
+                    <a href="#global-block-id-calculation-1" aria-label="Global Block ID Calculation">Global Block ID Calculation</a></li>
+                <li>
+                    <a href="#local-thread-indexing-1" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-thread-index-calculation-1" aria-label="Global Thread Index Calculation">Global Thread Index Calculation</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing--1d-grid-and-2d-block" aria-label="Thread Indexing – 1D Grid and 2D Block">Thread Indexing – 1D Grid and 2D Block</a></li>
+                <li>
+                    <a href="#thread-indexing---2d-grid-and-2d-block" aria-label="Thread Indexing - 2D Grid and 2D Block">Thread Indexing - 2D Grid and 2D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-1" aria-label="Grid Layout">Grid Layout</a></li>
+                <li>
+                    <a href="#local-thread-indexing-2" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-thread-index-calculation-2" aria-label="Global Thread Index Calculation">Global Thread Index Calculation</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing---3d-grid-and-2d-block" aria-label="Thread Indexing - 3D Grid and 2D Block">Thread Indexing - 3D Grid and 2D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-2" aria-label="Grid Layout">Grid Layout</a></li>
+                <li>
+                    <a href="#local-thread-indexing-3" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-thread-index-calculation-3" aria-label="Global Thread Index Calculation:">Global Thread Index Calculation:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing---1d-grid-and-3d-block" aria-label="Thread Indexing - 1D Grid and 3D Block">Thread Indexing - 1D Grid and 3D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-3" aria-label="Grid Layout">Grid Layout</a></li>
+                <li>
+                    <a href="#local-thread-indexing-4" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing---2d-grid-and-3d-block" aria-label="Thread Indexing - 2D Grid and 3D Block">Thread Indexing - 2D Grid and 3D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-4" aria-label="Grid Layout">Grid Layout</a></li>
+                <li>
+                    <a href="#local-thread-indexing-5" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-threadid-calculation" aria-label="Global ThreadID Calculation:">Global ThreadID Calculation:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#thread-indexing---3d-grid-and-3d-block" aria-label="Thread Indexing - 3D Grid and 3D Block">Thread Indexing - 3D Grid and 3D Block</a><ul>
+                        
+                <li>
+                    <a href="#grid-layout-5" aria-label="Grid Layout">Grid Layout</a></li>
+                <li>
+                    <a href="#local-thread-indexing-6" aria-label="Local Thread Indexing:">Local Thread Indexing:</a></li>
+                <li>
+                    <a href="#global-threadid-calculation-1" aria-label="Global ThreadID Calculation:">Global ThreadID Calculation:</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>GPUs execute many parallel threads. These threads are organized into a three-level hierarchy:</p>
+<ul>
+<li><strong>Grids:</strong> The entire collection of blocks that execute a kernel.</li>
+<li><strong>Blocks:</strong> Subdivisions of the grid that contain groups of threads. Threads within a block can cooperate via shared memory.</li>
+<li><strong>Threads:</strong> The smallest unit of execution.</li>
+</ul>
+<p>When launching a kernel (the function that performs computation), you specify this thread hierarchy using the following syntax:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>kernel_name<span style="color:#f92672">&lt;&lt;&lt;</span>gridDim, blockDim<span style="color:#f92672">&gt;&gt;&gt;</span>(...);
+</span></span></code></pre></div><p>Here, gridDim and blockDim can be configured with 1, 2, or 3 dimensions. Their possible combinations include:</p>
+<ul>
+<li>gridDim = 1D &amp; blockDim = 1D</li>
+<li>gridDim = 1D &amp; blockDim = 2D</li>
+<li>gridDim = 1D &amp; blockDim = 3D</li>
+<li>gridDim = 2D &amp; blockDim = 1D</li>
+<li>gridDim = 2D &amp; blockDim = 2D</li>
+<li>gridDim = 2D &amp; blockDim = 3D</li>
+<li>gridDim = 3D &amp; blockDim = 1D</li>
+<li>gridDim = 3D &amp; blockDim = 2D</li>
+<li>griddIM = 3D &amp; blockDim = 3D</li>
+</ul>
+<h1 id="thread-indexing--1d-grid-and-1d-block">Thread Indexing – 1D Grid and 1D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing--1d-grid-and-1d-block">#</a></h1>
+<p>Example: Grid with 2 Blocks, Each with 5 Threads
+Grid configuration: (2 blocks, each with 5 threads), can be denoted as (2,5).</p>
+<p>Local Thread Indexing:
+Within each block, threads are uniquely indexed from 0 to 4.</p>
+<h2 id="local-thread-index">Local Thread Index<a hidden class="anchor" aria-hidden="true" href="#local-thread-index">#</a></h2>
+<pre><code>| BlockID   | ThreadID (Local)|
+|---------  |-----------------|
+|  Block-0  |      Thread-0   |
+|  Block-0  |      Thread-1   |
+|  Block-0  |      Thread-2   |
+|  Block-0  |      Thread-3   |
+|  Block-0  |      Thread-4   |
+|  Block-1  |      Thread-0   |
+|  Block-1  |      Thread-1   |
+|  Block-1  |      Thread-2   |
+|  Block-1  |      Thread-3   |
+|  Block-1  |      Thread-4   |   
+</code></pre>
+<h2 id="global-threadindex">Global ThreadIndex<a hidden class="anchor" aria-hidden="true" href="#global-threadindex">#</a></h2>
+<p>Although thread indices are unique within a block, they are not unique across blocks. To compute a global thread ID, we use this one-dimensional indexing formula:</p>
+<p>we take help of predefined variables , in this context we only have one dimension hence these variables threadIdx.x, blockIdx.x, blockDim.x</p>
+<p><code>Global threadId = blockIdx.x * blockDim.x + threadIdx.x</code></p>
+<pre><code>1. blockDim.x= 5
+2. blockIdx.x = [0,1]
+3. threadIdx.x = [0,1,2,3,4]
+
+|   BlockID  |  Calculation |   Global ThreadID   |
+|------------|--------------|---------------------|
+|   Block-0  | 0 * 5 + 0    |           0         |
+|   Block-0  | 0 * 5 + 1    |           1         |
+|   Block-0  | 0 * 5 + 2    |           2         |
+|   Block-0  | 0 * 5 + 3    |           3         |
+|   Block-0  | 0 * 5 + 4    |           4         |
+|   Block-0  | 1 * 5 + 0    |           5         |
+|   Block-0  | 1 * 5 + 1    |           6         |   
+|   Block-0  | 1 * 5 + 2    |           7         |
+|   Block-0  | 1 * 5 + 3    |           8         |
+|   Block-0  | 1 * 5 + 4    |           9         |
+</code></pre>
+<h1 id="thread-indexing--2d-grid-and-1d-block">Thread Indexing – 2D Grid and 1D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing--2d-grid-and-1d-block">#</a></h1>
+<p>When the grid of blocks is two-dimensional, additional parameters (blockIdx.x and blockIdx.y) define the block&rsquo;s position in the grid. In this case, each block still uses 1D thread indexing.</p>
+<p>Example: Grid with a 2D Arrangement (2 columns × 3 rows) of Blocks</p>
+<h2 id="grid-layout-">Grid Layout :<a hidden class="anchor" aria-hidden="true" href="#grid-layout-">#</a></h2>
+<hr>
+<p>Imagine your grid is arranged as 2 blocks in the x-dimension and 3 blocks in the y-dimension. The grid can be represented as:</p>
+<pre><code>[ 
+  [Block (0,0), Block (0,1)],
+  [Block (1,0), Block (1,1)],
+  [Block (2,0), Block (2,1)] 
+]
+</code></pre>
+<p>Total Blocks =2(columns)×3(rows)=6.</p>
+<h2 id="global-block-id-calculation">Global Block ID Calculation<a hidden class="anchor" aria-hidden="true" href="#global-block-id-calculation">#</a></h2>
+<p>A unique global block ID is computed as: <code>blockId = blockIdx.y * gridDim.x + blockIdx.x</code></p>
+<p>For this example (with gridDim.x = 2):</p>
+<pre><code>|   blockIdx.y  |  blockIdx.x      |      Calculation      |  Global BlockID  |
+|---------------|------------------|-----------------------|------------------|
+|   0           |     0            |         0 * 2 + 0     |       0          |
+|   0           |     1            |         0 * 2 + 1     |       1          |
+|   1           |     0            |         1 * 2 + 0     |       2          |
+|   1           |     1            |         1 * 2 + 1     |       3          |
+|   2           |     0            |         2 * 2 + 0     |       4          |
+|   2           |     1            |         2 * 2 + 1     |       5          |
+</code></pre>
+<h2 id="local-thread-indexing">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing">#</a></h2>
+<p>Each block contains 5 threads with local thread indices ranging from 0 to 4.</p>
+<p>Matrix Representation of 2D Blocks in the Grid</p>
+<pre><code>|       | x = 0        | x = 1        |
+|-------|--------------|--------------|
+| y=0   | Block (0,0)  | Block (0,1)  |
+| y=1   | Block (1,0)  | Block (1,1)  |
+| y=2   | Block (2,0)  | Block (2,1)  |
+
+
+|       | x = 0        | x = 1        |
+|-------|--------------|--------------|
+| y=0   |       0      |    1         |
+| y=1   |       2      |    3         |
+| y=2   |       4      |    5         |
+</code></pre>
+<h2 id="global-thread-index-calculation">Global Thread Index Calculation<a hidden class="anchor" aria-hidden="true" href="#global-thread-index-calculation">#</a></h2>
+<p>Once the unique global block ID is computed, the global thread ID is calculated by:</p>
+<p>threadId = blockId * blockDim.x + threadIdx.x;</p>
+<ul>
+<li>
+<p>blockDim.x = 5</p>
+</li>
+<li>
+<p>threadIdx.x = [0, 1, 2, 3, 4]</p>
+<pre><code>  |   GlobalBlockID   |  Calculation     |   GlobalThreadID      |
+  |-------------------|------------------|-----------------------|
+  |       0           |   0 * 5 + 0      |           0           |
+  |       0           |   0 * 5 + 1      |           1           |
+  |       0           |   0 * 5 + 2      |           2           |
+  |       0           |   0 * 5 + 3      |           3           |
+  |       0           |   0 * 5 + 4      |           4           |
+  |       1           |   1 * 5 + 0      |           5           |
+  |       1           |   1 * 5 + 1      |           6           |
+  |       1           |   1 * 5 + 2      |           7           |
+  |       1           |   1 * 5 + 3      |           8           |
+  |       1           |   1 * 5 + 4      |           9           |
+  |       2           |   2 * 5 + 0      |           10          |
+  |       2           |   2 * 5 + 1      |           11          |
+  |       2           |   2 * 5 + 2      |           12          |
+  |       2           |   2 * 5 + 3      |           13          |
+  |       2           |   2 * 5 + 4      |           14          |
+  |       3           |   3 * 5 + 0      |           15          |
+  |       3           |   3 * 5 + 1      |           16          |
+  |       3           |   3 * 5 + 2      |           17          |
+  |       3           |   3 * 5 + 3      |           18          |
+  |       3           |   3 * 5 + 4      |           19          |
+  |       4           |   4 * 5 + 0      |           20          |
+  |       4           |   4 * 5 + 1      |           21          |
+  |       4           |   4 * 5 + 2      |           22          |
+  |       4           |   4 * 5 + 3      |           23          |
+  |       4           |   4 * 5 + 4      |           24          |
+  |       5           |   5 * 5 + 0      |           25          |
+  |       5           |   5 * 5 + 1      |           26          |
+  |       5           |   5 * 5 + 2      |           27          |
+  |       5           |   5 * 5 + 3      |           28          |
+  |       5           |   5 * 5 + 4      |           29          |
+</code></pre>
+</li>
+</ul>
+<h1 id="thread-indexing--3d-grid-and-1d-block">Thread Indexing – 3D Grid and 1D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing--3d-grid-and-1d-block">#</a></h1>
+<p>When the grid of blocks is three-dimensional, we have predefined parameters (blockIdx.x and blockIdx.y, blockIdx.z) define the block&rsquo;s position in the grid. In this case, each block still uses 1D thread indexing.</p>
+<p>Example: Grid with a 3D Arrangement (2 × 3 * 4) of Blocks</p>
+<p>(x,y,z) = (2,3,4)</p>
+<h2 id="grid-layout">Grid Layout:<a hidden class="anchor" aria-hidden="true" href="#grid-layout">#</a></h2>
+<hr>
+<pre><code>Total Blocks =2(x)×3(y)*4(z) = 24.
+
+grid = [
+
+[  # z = 0
+    [ Block(0,0,0), Block(0,0,1) ],  # y = 0
+    [ Block(0,1,0), Block(0,1,1) ],  # y = 1
+    [ Block(0,2,0), Block(0,2,1) ]   # y = 2
+],
+[  # z = 1
+    [ Block(1,0,0), Block(1,0,1) ],  # y = 0
+    [ Block(1,1,0), Block(1,1,1) ],  # y = 1
+    [ Block(1,2,0), Block(1,2,1) ]   # y = 2
+],
+[  # z = 2
+    [ Block(2,0,0), Block(2,0,1) ],  # y = 0
+    [ Block(2,1,0), Block(2,1,1) ],  # y = 1
+    [ Block(2,2,0), Block(2,2,1) ]   # y = 2
+],
+[  # z = 3
+    [ Block(3,0,0), Block(3,0,1) ],  # y = 0 
+    [ Block(3,1,0), Block(3,1,1) ],  # y = 1
+    [ Block(3,2,0), Block(3,2,1) ]   # y = 2
+]
+]
+</code></pre>
+<h2 id="global-block-id-calculation-1">Global Block ID Calculation<a hidden class="anchor" aria-hidden="true" href="#global-block-id-calculation-1">#</a></h2>
+<p>A unique global block ID is computed as: <code>blockId = blockIdx.z * gridDim.y * gridDim.x  + blockIdx.y * gridDim.x + blockIdx.x</code></p>
+<p>For this example</p>
+<pre><code>gridDim.x = 2
+gridDim.y = 3
+gridDim.z = 4 
+
+
+|    blockIdx.z  |   blockIdx.y  |  blockIdx.x      |      Calculation           |  Global BlockID   |
+|----------------|---------------|------------------|--------------------------- | ------------------|
+|       0        |     0         |     0            |     0 * 2 * 3 + 0 * 2 + 0  |         0         |
+|       0        |     0         |     1            |     0 * 2 * 3 + 0 * 2 + 1  |         1         |
+|       0        |     1         |     0            |     0 * 2 * 3 + 1 * 2 + 0  |         2         |
+|       0        |     1         |     1            |     0 * 2 * 3 + 1 * 2 + 1  |         3         |
+|       0        |     2         |     0            |     0 * 2 * 3 + 2 * 2 + 0  |         4         |
+|       0        |     2         |     1            |     0 * 2 * 3 + 2 * 2 + 1  |         5         |
+|       1        |     0         |     0            |     1 * 2 * 3 + 0 * 2 + 0  |         6         |
+|       1        |     0         |     1            |     1 * 2 * 3 + 0 * 2 + 1  |         7         |
+|       1        |     1         |     0            |     1 * 2 * 3 + 1 * 2 + 0  |         8         |
+|       1        |     1         |     1            |     1 * 2 * 3 + 1 * 2 + 1  |         9         |
+|       1        |     2         |     0            |     1 * 2 * 3 + 2 * 2 + 0  |         10        |
+|       1        |     2         |     1            |     1 * 2 * 3 + 2 * 2 + 1  |         11        |
+|       2        |     0         |     0            |     2 * 2 * 3 + 0 * 2 + 0  |         12        |
+|       2        |     0         |     1            |     2 * 2 * 3 + 0 * 2 + 1  |         13        |
+|       2        |     1         |     0            |     2 * 2 * 3 + 1 * 2 + 0  |         14        |
+|       2        |     1         |     1            |     2 * 2 * 3 + 1 * 2 + 1  |         15        |
+|       2        |     2         |     0            |     2 * 2 * 3 + 2 * 2 + 0  |         16        |
+|       2        |     2         |     1            |     2 * 2 * 3 + 2 * 2 + 1  |         17        |
+|       3        |     0         |     0            |     3 * 2 * 3 + 0 * 2 + 0  |         18        |
+|       3        |     0         |     1            |     3 * 2 * 3 + 0 * 2 + 1  |         19        |
+|       3        |     1         |     0            |     3 * 2 * 3 + 1 * 2 + 0  |         20        |
+|       3        |     1         |     1            |     3 * 2 * 3 + 1 * 2 + 1  |         21        |
+|       3        |     2         |     0            |     3 * 2 * 3 + 2 * 2 + 0  |         22        |
+|       3        |     2         |     1            |     3 * 2 * 3 + 2 * 2 + 1  |         23        |
+</code></pre>
+<h2 id="local-thread-indexing-1">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-1">#</a></h2>
+<p>Each block contains 5 threads with local thread indices from 0 to 4.</p>
+<h2 id="global-thread-index-calculation-1">Global Thread Index Calculation<a hidden class="anchor" aria-hidden="true" href="#global-thread-index-calculation-1">#</a></h2>
+<p>Once the unique global block ID is computed, the global thread ID is calculated by:</p>
+<p>threadId = blockId * blockDim.x + threadIdx.x;</p>
+<ul>
+<li>
+<p>BlockDim.x = 5</p>
+</li>
+<li>
+<p>threadIdx.x = [0, 1, 2, 3, 4]</p>
+<pre><code>  |   GlobalBlockID   |  Calculation     |   GlobalThreadID      |
+  |-------------------|------------------|-----------------------|
+  |       0           |   0 * 5 + 0      |           0           |
+  |       0           |   0 * 5 + 1      |           1           |
+  |       0           |   0 * 5 + 2      |           2           |
+  |       0           |   0 * 5 + 3      |           3           |
+  |       0           |   0 * 5 + 4      |           4           |
+  |       1           |   1 * 5 + 0      |           5           |
+  |       1           |   1 * 5 + 1      |           6           |
+  |       1           |   1 * 5 + 2      |           7           |
+  |       1           |   1 * 5 + 3      |           8           |
+  |       1           |   1 * 5 + 4      |           9           |
+  |       2           |   2 * 5 + 0      |           10          |
+  |       2           |   2 * 5 + 1      |           11          |
+  |       2           |   2 * 5 + 2      |           12          |
+  |       2           |   2 * 5 + 3      |           13          |
+  |       2           |   2 * 5 + 4      |           14          |
+  |       3           |   3 * 5 + 0      |           15          |
+  |       3           |   3 * 5 + 1      |           16          |
+  |       3           |   3 * 5 + 2      |           17          |
+  |       3           |   3 * 5 + 3      |           18          |
+  |       3           |   3 * 5 + 4      |           19          |
+  |       4           |   4 * 5 + 0      |           20          |
+  |       4           |   4 * 5 + 1      |           21          |
+  |       4           |   4 * 5 + 2      |           22          |
+  |       4           |   4 * 5 + 3      |           23          |
+  |       4           |   4 * 5 + 4      |           24          |
+  |       5           |   5 * 5 + 0      |           25          |
+  |       5           |   5 * 5 + 1      |           26          |
+  |       5           |   5 * 5 + 2      |           27          |
+  |       5           |   5 * 5 + 3      |           28          |
+  |       5           |   5 * 5 + 4      |           29          |
+  |       6           |   6 * 5 + 0      |           30          |
+  |       6           |   6 * 5 + 1      |           31          |
+  |       6           |   6 * 5 + 2      |           32          |
+  |       6           |   6 * 5 + 3      |           33          |
+  |       6           |   6 * 5 + 4      |           34          |
+  |                   |                  |                       |
+  |                   |                  |                       |
+  |                   |                  |                       |
+  |       23          |   23 * 5 + 0     |           115         |
+  |       23          |   23 * 5 + 1     |           116         |
+  |       23          |   23 * 5 + 2     |           117         |
+  |       23          |   23 * 5 + 3     |           118         |
+  |       23          |   23 * 5 + 4     |           119         |
+</code></pre>
+</li>
+</ul>
+<h1 id="thread-indexing--1d-grid-and-2d-block">Thread Indexing – 1D Grid and 2D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing--1d-grid-and-2d-block">#</a></h1>
+<ul>
+<li>GridDim is  1D : gridDim.x = N (say gridDim.x = 1)</li>
+<li>BlockDim is 2D : blockDim.x = 2, blockDim.y = 3</li>
+</ul>
+<p>Since GridDim is 1D, we have only one block. If gridDim.x = 1, the only block is blockIdx.x = 0.</p>
+<pre><code>blockDim = (2, 3)
+---------------------
+| (0,0) | (0,1) |
+| (1,0) | (1,1) |
+| (2,0) | (2,1) |
+---------------------
+</code></pre>
+<p>To calculate global thread indices in 2D, we use:</p>
+<p>int global_x = threadIdx.x + blockIdx.x * blockDim.x;
+int global_y = threadIdx.y + blockIdx.y * blockDim.y;</p>
+<p>Each thread in the single block Block(0) has a unique (threadIdx.x, threadIdx.y):</p>
+<p>Global Thread Index (flattened row-wise):</p>
+<pre><code>---------------------
+|   0   |   1   |
+|   2   |   3   |
+|   4   |   5   |
+---------------------
+</code></pre>
+<p>we can derive Global Index using Formulae <code>threadIdx.y * blockDim.x + threadIdx.x</code></p>
+<pre><code>Block(0) – Threads with blockDim(2,3)
+
+blockDim.x = 2
+
+| threadIdx.y | threadIdx.x | GlobalThreadID   |
+|-------------|-------------|------------------|
+|     0       |     0       |    0 * 2 + 0     |
+|     0       |     1       |    0 * 2 + 1     |
+|     1       |     0       |    1 * 2 + 0     |
+|     1       |     1       |    1 * 2 + 1     |
+|     2       |     0       |    2 * 2  + 0    |
+|     2       |     1       |    2 * 2 + 1     |
+</code></pre>
+<h1 id="thread-indexing---2d-grid-and-2d-block">Thread Indexing - 2D Grid and 2D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing---2d-grid-and-2d-block">#</a></h1>
+<p>dim3 gridDim(3,2) = (x,y)
+dim3 blockDim(4,2) = (x,y)</p>
+<p>gridDim.x = 3
+gridDim.y = 2
+blockDim.x = 4
+blockDim.y = 2</p>
+<p>Total Number of Blocks = 3<em>2 = 6 Blocks
+Threads per Blocks = 4</em>2 = 8 Threads
+Total Threads = 6 * 8 = 48 Threads</p>
+<h2 id="grid-layout-1">Grid Layout<a hidden class="anchor" aria-hidden="true" href="#grid-layout-1">#</a></h2>
+<hr>
+<pre><code>gridDim = (3, 2)
+
+|        | x = 0 | x = 1 |  x=2      |
+|------- |-------|-------|-----------|
+|  y = 0 | (0,0) | (0,1) |  (0,2)    |
+|  y = 1 | (1,0) | (1,1) |  (1,2)    |
+ ------------------------------------
+
+|       |  x = 0  |  x = 1  |  x = 2  |
+|-------|-------- |---------|---------|
+| y=0   |    0    |    1    |   2     |
+| y=1   |    3    |    4    |   5     |
+|-------------------------------------|
+</code></pre>
+<p>A unique global block ID is computed as: <code>blockId = blockIdx.y * gridDim.x + blockIdx.x</code></p>
+<p>For this example (with gridDim.x = 2):</p>
+<pre><code>|   blockIdx.y  |  blockIdx.x      |      Calculation      |  Global BlockId  |
+|---------------|------------------|-----------------------|------------------|
+|   0           |     0            |         0 * 3 + 0     |       0          |
+|   0           |     1            |         0 * 3 + 1     |       1          |
+|   0           |     2            |         0 * 3 + 2     |       2          |
+|   1           |     0            |         1 * 3 + 0     |       3          |
+|   1           |     1            |         1 * 3 + 1     |       4          |
+|   1           |     2            |         1 * 3 + 2     |       5          |
+</code></pre>
+<h2 id="local-thread-indexing-2">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-2">#</a></h2>
+<hr>
+<pre><code>blockDim = (4, 2)
+
+|        | x = 0 | x = 1 |  x=2   | x=3  |
+|------- |-------|-------|--------|------|
+|  y = 0 | (0,0) | (0,1) |  (0,2) | (0,3)|
+|  y = 1 | (1,0) | (1,1) |  (1,2) | (1,3)|
+ -----------------------------------------
+
+|       |  x = 0  |  x = 1  |  x = 2  | x = 3 |
+|-------|-------- |---------|---------|-------|
+| y=0   |    0    |    1    |   2     |   3   |
+| y=1   |    4    |    5    |   6     |   7   |
+|---------------------------------------------|
+</code></pre>
+<p>Local Thread Index - Linear Index can be calculated with formulae : <code>local threadId  = threadIdx.y * blockDim.x + threadIdx.x</code></p>
+<pre><code>|   threadIdx.y |  threadIdx.x     |      Calculation      |  Local ThreadId  |
+|---------------|------------------|-----------------------|------------------|
+|   0           |     0            |         0 * 4 + 0     |       0          |
+|   0           |     1            |         0 * 4 + 1     |       1          |
+|   0           |     2            |         0 * 4 + 2     |       2          |
+|   0           |     3            |         0 * 4 + 3     |       3          |
+|   1           |     0            |         1 * 4 + 0     |       4          |
+|   1           |     1            |         1 * 4 + 1     |       5          |
+|   1           |     2            |         1 * 4 + 2     |       6          |
+|   1           |     3            |         1 * 4 + 3     |       7          |
+</code></pre>
+<h2 id="global-thread-index-calculation-2">Global Thread Index Calculation<a hidden class="anchor" aria-hidden="true" href="#global-thread-index-calculation-2">#</a></h2>
+<p>Finally using Global BlockId &amp; Local ThreadId of each Block we can Calculate Global Thread Id using below formulae:</p>
+<p><code>(blockId * blockDim.x * blockDim.y) + local threadId</code></p>
+<p><code>blockId  = blockIdx.y * gridDim.x + blockIdx.x</code>         <br>
+<code>local ThreadId =  threadIdx.y * blockDim.x + threadIdx.x</code></p>
+<pre><code>    |   GlobalBlockID   |   LocalThreadId  |   GlobalThreadID      |
+    |-------------------|------------------|-----------------------|
+    |       0           |   0 * 8 + 0      |           0           |
+    |       0           |   0 * 8 + 1      |           1           |
+    |       0           |   0 * 8 + 2      |           2           |
+    |       0           |   0 * 8 + 3      |           3           |
+    |       0           |   0 * 8 + 4      |           4           |
+    |       0           |   0 * 8 + 5      |           5           |
+    |       0           |   0 * 8 + 6      |           6           |
+    |       0           |   0 * 8 + 7      |           7           |
+
+    |       1           |   1 * 8 + 0      |           8           |
+    |       1           |   1 * 8 + 1      |           9           |
+    |       1           |   1 * 8 + 2      |           10          |
+    |       1           |   1 * 8 + 3      |           11          |
+    |       1           |   1 * 8 + 4      |           12          |
+    |       1           |   1 * 8 + 5      |           13          |
+    |       1           |   1 * 8 + 6      |           14          |
+    |       1           |   1 * 8 + 7      |           15          |
+
+    |       2           |   2 * 8 + 0      |           16          |
+    |       2           |   2 * 8 + 1      |           17          |
+    |       2           |   2 * 8 + 2      |           18          |
+    |       2           |   2 * 8 + 3      |           19          |
+    |       2           |   2 * 8 + 4      |           20          |
+    |       2           |   2 * 8 + 5      |           21          |
+    |       2           |   2 * 8 + 6      |           22          |
+    |       2           |   2 * 8 + 7      |           23          |
+
+  
+
+
+    |       5           |   5 * 8 + 0      |           40          |
+    |       5           |   5 * 8 + 1      |           41          |
+    |       5           |   5 * 8 + 2      |           42          |
+    |       5           |   5 * 8 + 3      |           43          |
+    |       5           |   5 * 8 + 4      |           44          |
+    |       5           |   5 * 8 + 5      |           45          |
+    |       5           |   5 * 8 + 6      |           46          |
+    |       5           |   5 * 8 + 7      |           47          |
+</code></pre>
+<h1 id="thread-indexing---3d-grid-and-2d-block">Thread Indexing - 3D Grid and 2D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing---3d-grid-and-2d-block">#</a></h1>
+<p>dim3 gridDim(4,3,2) = (x,y,z)
+dim3 blockDim(4,2) = (x,y)</p>
+<p>gridDim.x = 4
+gridDim.y = 3
+gridDim.z = 2</p>
+<p>blockDim.x = 4
+blockDim.y = 2</p>
+<p>Number of Blocks = 24
+Nubmer of Thread per Block = 8
+Total Number of Threads  = 24 * 8 = 192</p>
+<h2 id="grid-layout-2">Grid Layout<a hidden class="anchor" aria-hidden="true" href="#grid-layout-2">#</a></h2>
+<hr>
+<p>Grid Comprises of 2 matrices of (3*4) , which can be represented as below.</p>
+<p>Total Number of Blocks = 4 * 3 * 2 = 24 Blocks</p>
+<pre><code>grid = [
+
+[  # z = 0
+    [ Block(0,0,0), Block(0,0,1), Block(0,0,2), Block(0,0,3) ],  # y = 0
+    [ Block(0,1,0), Block(0,1,1), Block(0,1,2), Block(0,1,3) ],  # y = 1
+    [ Block(0,2,0), Block(0,2,1), Block(0,2,2), Block(0,2,3) ]   # y = 2
+],
+[  # z = 1
+    [ Block(1,0,0), Block(1,0,1), Block(1,0,2), Block(1,0,3)  ],  # y = 0
+    [ Block(1,1,0), Block(1,1,1), Block(1,1,2), Block(1,1,3)  ],  # y = 1
+    [ Block(1,2,0), Block(1,2,1), Block(1,2,2), Block(1,2,3)  ]  # y = 2
+]
+
+]
+</code></pre>
+<p>A unique global block ID is computed as: <code>blockId = ( blockIdx.z * gridDim.y * gridDim.x ) + ( blockIdx.y * gridDim.x ) + blockIdx.x</code></p>
+<pre><code>    | blockIdx.z   |   blockIdx.y  |  blockIdx.x      |      Calculation                  |  Global BlockId  |
+    |------------- |---------------|------------------|-----------------------------------|------------------|
+    |      0       |   0           |     0            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 0  |       0          |
+    |      0       |   0           |     1            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 1  |       1          |
+    |      0       |   0           |     2            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 2  |       2          |
+    |      0       |   0           |     3            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 3  |       3          |
+    |      0       |   1           |     0            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 0  |       4          |
+    |      0       |   1           |     1            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 1  |       5          |
+    |      0       |   1           |     2            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 2  |       6          |
+    |      0       |   1           |     3            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 3  |       7          |
+    |      0       |   2           |     0            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 0  |       8          |
+    |      0       |   2           |     1            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 1  |       9          |
+    |      0       |   2           |     2            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 2  |       10         |
+    |      0       |   2           |     3            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 3  |       11         |
+
+    |      1       |   0           |     0            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 0  |       12          |
+    |      1       |   0           |     1            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 1  |       13          |
+    |      1       |   0           |     2            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 2  |       14          |
+    |      1       |   0           |     3            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 3  |       15          |
+    |      1       |   1           |     0            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 0  |       16          |
+    |      1       |   1           |     1            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 1  |       17          |
+    |      1       |   1           |     2            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 2  |       18          |
+    |      1       |   1           |     3            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 3  |       19          |
+    |      1       |   2           |     0            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 0  |       20          |
+    |      1       |   2           |     1            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 1  |       21          |
+    |      1       |   2           |     2            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 2  |       22          |
+    |      1       |   2           |     3            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 3  |       23          |
+</code></pre>
+<h2 id="local-thread-indexing-3">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-3">#</a></h2>
+<hr>
+<pre><code>blockDim = (4, 2)
+
+|        | x = 0 | x = 1 |  x=2   | x=3  |
+|------- |-------|-------|--------|------|
+|  y = 0 | (0,0) | (0,1) |  (0,2) | (0,3)|
+|  y = 1 | (1,0) | (1,1) |  (1,2) | (1,3)|
+ -----------------------------------------
+
+|       |  x = 0  |  x = 1  |  x = 2  | x = 3 |
+|-------|-------- |---------|---------|-------|
+| y=0   |    0    |    1    |   2     |   3   |
+| y=1   |    4    |    5    |   6     |   7   |
+|---------------------------------------------|
+</code></pre>
+<p>Local Thread Index - Linear Index can be calculated with formulae : <code>local threadId  = threadIdx.y * blockDim.x + threadIdx.x</code></p>
+<pre><code>|   threadIdx.y |  threadIdx.x     |      Calculation      |  Local ThreadId  |
+|---------------|------------------|-----------------------|------------------|
+|   0           |     0            |         0 * 4 + 0     |       0          |
+|   0           |     1            |         0 * 4 + 1     |       1          |
+|   0           |     2            |         0 * 4 + 2     |       2          |
+|   0           |     3            |         0 * 4 + 3     |       3          |
+|   1           |     0            |         1 * 4 + 0     |       4          |
+|   1           |     1            |         1 * 4 + 1     |       5          |
+|   1           |     2            |         1 * 4 + 2     |       6          |
+|   1           |     3            |         1 * 4 + 3     |       7          |
+</code></pre>
+<h2 id="global-thread-index-calculation-3">Global Thread Index Calculation:<a hidden class="anchor" aria-hidden="true" href="#global-thread-index-calculation-3">#</a></h2>
+<p>Finally using Global BlockId &amp; Local ThreadId of each Block we can Calculate Global Thread Id using below formulae:</p>
+<p><code>(blockId * blockDim.x * blockDim.y) + local threadId</code></p>
+<p><code>blockId  = blockIdx.y * gridDim.x + blockIdx.x</code>         <br>
+<code>local ThreadId =  threadIdx.y * blockDim.x + threadIdx.x</code></p>
+<pre><code>    |   GlobalBlockID   |   LocalThreadId  |   GlobalThreadID      |
+    |-------------------|------------------|-----------------------|
+    |       0           |   0 * 8 + 0      |           0           |
+    |       0           |   0 * 8 + 1      |           1           |
+    |       0           |   0 * 8 + 2      |           2           |
+    |       0           |   0 * 8 + 3      |           3           |
+    |       0           |   0 * 8 + 4      |           4           |
+    |       0           |   0 * 8 + 5      |           5           |
+    |       0           |   0 * 8 + 6      |           6           |
+    |       0           |   0 * 8 + 7      |           7           |
+    
+
+    |       1           |   1 * 8 + 0      |           8           |
+    |       1           |   1 * 8 + 1      |           9           |
+    |       1           |   1 * 8 + 2      |           10          |
+    |       1           |   1 * 8 + 3      |           11          |
+    |       1           |   1 * 8 + 4      |           12          |
+    |       1           |   1 * 8 + 5      |           13          |
+    |       1           |   1 * 8 + 6      |           14          |
+    |       1           |   1 * 8 + 7      |           15          |
+
+    |       2           |   2 * 8 + 0      |           16          |
+    |       2           |   2 * 8 + 1      |           17          |
+    |       2           |   2 * 8 + 2      |           18          |
+    |       2           |   2 * 8 + 3      |           19          |
+    |       2           |   2 * 8 + 4      |           20          |
+    |       2           |   2 * 8 + 5      |           21          |
+    |       2           |   2 * 8 + 6      |           22          |
+    |       2           |   2 * 8 + 7      |           23          |
+
+  
+
+
+    |       23          |   23 * 8 + 0      |           184         |
+    |       23          |   23 * 8 + 1      |           185         |
+    |       23          |   23 * 8 + 2      |           186         |
+    |       23          |   23 * 8 + 3      |           187         |
+    |       23          |   23 * 8 + 4      |           188         |
+    |       23          |   23 * 8 + 5      |           189         |
+    |       23          |   23* 8 + 6       |           190         |
+    |       23          |   23 * 8 + 7      |           191         |
+</code></pre>
+<h1 id="thread-indexing---1d-grid-and-3d-block">Thread Indexing - 1D Grid and 3D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing---1d-grid-and-3d-block">#</a></h1>
+<p>dim3 gridDim(1)
+dim3 blockDim(6,3,2)</p>
+<p>(x,y,z) = (6,3,2)</p>
+<p>gridDim.x = 1</p>
+<p>blockDim.x = 6
+blockDim.y = 3
+blockDim.z = 2</p>
+<p>Number of Threads per Block :- 6 * 3 * 2 = 36</p>
+<h2 id="grid-layout-3">Grid Layout<a hidden class="anchor" aria-hidden="true" href="#grid-layout-3">#</a></h2>
+<hr>
+<p>Here , as we only have one Block we don&rsquo;t need to calculate GlobalID and directly we can start with calculating Local ThreadID inside
+Block, which also becomes GlobalThreadID due to single Block</p>
+<h2 id="local-thread-indexing-4">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-4">#</a></h2>
+<hr>
+<p>[</p>
+<pre><code>    [  # z = 0
+        [ Thread(0,0,0), Thread(0,0,1), Thread(0,0,2), Thread(0,0,3), Thread(0,0,4), Thread(0,0,5)  ],  # y = 0
+        [ Thread(0,1,0), Thread(0,1,1), Thread(0,1,2), Thread(0,1,3), Thread(0,1,4), Thread(0,1,5)  ],  # y = 1
+        [ Thread(0,2,0), Thread(0,2,1), Thread(0,2,2), Thread(0,2,3), Thread(0,2,4), Thread(0,2,5)  ]   # y = 2
+    ],
+    [  # z = 1
+        [ Thread(1,0,0), Thread(1,0,1), Thread(1,0,2), Thread(1,0,3), Thread(1,0,4), Thread(1,0,5)   ],  # y = 0
+        [ Thread(1,1,0), Thread(1,1,1), Thread(1,1,2), Thread(1,1,3), Thread(1,1,4), Thread(1,1,5)   ],  # y = 1
+        [ Thread(1,2,0), Thread(1,2,1), Thread(1,2,2), Thread(1,2,3), Thread(1,2,4), Thread(1,2,5)   ]  # y = 2
+    ]
+
+]
+</code></pre>
+<p>Local ThreadID is computed as: <code>Local ThreadId = ( threadIdx.z * blockDim.y * blockDim.x ) + ( threadIdx.y * blockDim.x ) + threadIdx.x</code></p>
+<pre><code>    | threadIdx.z  |   threadIdx.y |  threadIdx.x     |      Calculation                  |  Local ThreadId  |
+    |------------- |---------------|------------------|-----------------------------------|------------------|
+    |      0       |   0           |     0            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 0  |       0          |
+    |      0       |   0           |     1            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 1  |       1          |
+    |      0       |   0           |     2            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 2  |       2          |
+    |      0       |   0           |     3            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 3  |       3          |
+    |      0       |   0           |     4            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 4  |       4          |
+    |      0       |   0           |     5            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 5  |       5          |
+    
+    |      0       |   1           |     0            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 0  |       6          |
+    |      0       |   1           |     1            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 1  |       7          |
+    |      0       |   1           |     2            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 2  |       8          |
+    |      0       |   1           |     3            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 3  |       9          |
+    |      0       |   1           |     4            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 4  |       10         |
+    |      0       |   1           |     5            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 5  |       11         |
+
+    |      0       |   2           |     0            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 0  |       12         |
+    |      0       |   2           |     1            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 1  |       13         |
+    |      0       |   2           |     2            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 2  |       14         |
+    |      0       |   2           |     3            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 3  |       15         |
+    |      0       |   2           |     4            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 4  |       16         |
+    |      0       |   2           |     5            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 5  |       17         |
+
+
+    |      1       |   0           |     0            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 0  |       18         |
+    |      1       |   0           |     1            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 1  |       19         |
+    |      1       |   0           |     2            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 2  |       20         |
+    |      1       |   0           |     3            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 3  |       21         |
+    |      1       |   0           |     4            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 4  |       22         |
+    |      1       |   0           |     5            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 5  |       23         |
+
+    |      1       |   1           |     0            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 0  |       24         |
+    |      1       |   1           |     1            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 1  |       25         |
+    |      1       |   1           |     2            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 2  |       26         |
+    |      1       |   1           |     3            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 3  |       27         |
+    |      1       |   1           |     4            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 4  |       28         |
+    |      1       |   1           |     5            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 5  |       29         |
+
+    |      1       |   2           |     0            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 0  |       30         |
+    |      1       |   2           |     1            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 1  |       31         |
+    |      1       |   2           |     2            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 2  |       32         |
+    |      1       |   2           |     3            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 3  |       33         |
+    |      1       |   2           |     4            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 4  |       34         |
+    |      1       |   2           |     5            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 5  |       35         |
+</code></pre>
+<h1 id="thread-indexing---2d-grid-and-3d-block">Thread Indexing - 2D Grid and 3D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing---2d-grid-and-3d-block">#</a></h1>
+<p>dim3 gridDim(3,2) = (x,y)
+dim3 blockDim(6,3,2)  = (x,y,z)</p>
+<p>gridDim.x = 3
+gridDim.y = 2</p>
+<p>blockDim.x = 6
+blockDim.y = 3
+blockDim.z = 2</p>
+<h2 id="grid-layout-4">Grid Layout<a hidden class="anchor" aria-hidden="true" href="#grid-layout-4">#</a></h2>
+<hr>
+<pre><code>gridDim = (3, 2)
+
+|        | x = 0 | x = 1 |  x=2      |
+|------- |-------|-------|-----------|
+|  y = 0 | (0,0) | (0,1) |  (0,2)    |
+|  y = 1 | (1,0) | (1,1) |  (1,2)    |
+ ------------------------------------
+
+|       |  x = 0  |  x = 1  |  x = 2  |
+|-------|-------- |---------|---------|
+| y=0   |    0    |    1    |   2     |
+| y=1   |    3    |    4    |   5     |
+|-------------------------------------|
+</code></pre>
+<p>A unique global block ID is computed as: <code>blockId = blockIdx.y * gridDim.x + blockIdx.x</code></p>
+<p>For this example (with gridDim.x = 2):</p>
+<pre><code>|   blockIdx.y  |  blockIdx.x      |      Calculation      |  Global BlockId  |
+|---------------|------------------|-----------------------|------------------|
+|   0           |     0            |         0 * 3 + 0     |       0          |
+|   0           |     1            |         0 * 3 + 1     |       1          |
+|   0           |     2            |         0 * 3 + 2     |       2          |
+|   1           |     0            |         1 * 3 + 0     |       3          |
+|   1           |     1            |         1 * 3 + 1     |       4          |
+|   1           |     2            |         1 * 3 + 2     |       5          |
+</code></pre>
+<h2 id="local-thread-indexing-5">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-5">#</a></h2>
+<hr>
+<p>[</p>
+<pre><code>    [  # z = 0
+        [ Thread(0,0,0), Thread(0,0,1), Thread(0,0,2), Thread(0,0,3), Thread(0,0,4), Thread(0,0,5)  ],  # y = 0
+        [ Thread(0,1,0), Thread(0,1,1), Thread(0,1,2), Thread(0,1,3), Thread(0,1,4), Thread(0,1,5)  ],  # y = 1
+        [ Thread(0,2,0), Thread(0,2,1), Thread(0,2,2), Thread(0,2,3), Thread(0,2,4), Thread(0,2,5)  ]   # y = 2
+    ],
+    [  # z = 1
+        [ Thread(1,0,0), Thread(1,0,1), Thread(1,0,2), Thread(1,0,3), Thread(1,0,4), Thread(1,0,5)   ],  # y = 0
+        [ Thread(1,1,0), Thread(1,1,1), Thread(1,1,2), Thread(1,1,3), Thread(1,1,4), Thread(1,1,5)   ],  # y = 1
+        [ Thread(1,2,0), Thread(1,2,1), Thread(1,2,2), Thread(1,2,3), Thread(1,2,4), Thread(1,2,5)   ]  # y = 2
+    ]
+
+]
+</code></pre>
+<p>Local ThreadID is computed as: <code>Local ThreadId = ( threadIdx.z * blockDim.y * blockDim.x ) + ( threadIdx.y * blockDim.x ) + threadIdx.x</code></p>
+<pre><code>    | threadIdx.z  |   threadIdx.y |  threadIdx.x     |      Calculation                  |  Local ThreadId  |
+    |------------- |---------------|------------------|-----------------------------------|------------------|
+    |      0       |   0           |     0            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 0  |       0          |
+    |      0       |   0           |     1            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 1  |       1          |
+    |      0       |   0           |     2            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 2  |       2          |
+    |      0       |   0           |     3            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 3  |       3          |
+    |      0       |   0           |     4            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 4  |       4          |
+    |      0       |   0           |     5            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 5  |       5          |
+    
+    |      0       |   1           |     0            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 0  |       6          |
+    |      0       |   1           |     1            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 1  |       7          |
+    |      0       |   1           |     2            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 2  |       8          |
+    |      0       |   1           |     3            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 3  |       9          |
+    |      0       |   1           |     4            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 4  |       10         |
+    |      0       |   1           |     5            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 5  |       11         |
+
+    |      0       |   2           |     0            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 0  |       12         |
+    |      0       |   2           |     1            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 1  |       13         |
+    |      0       |   2           |     2            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 2  |       14         |
+    |      0       |   2           |     3            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 3  |       15         |
+    |      0       |   2           |     4            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 4  |       16         |
+    |      0       |   2           |     5            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 5  |       17         |
+
+
+    |      1       |   0           |     0            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 0  |       18         |
+    |      1       |   0           |     1            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 1  |       19         |
+    |      1       |   0           |     2            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 2  |       20         |
+    |      1       |   0           |     3            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 3  |       21         |
+    |      1       |   0           |     4            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 4  |       22         |
+    |      1       |   0           |     5            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 5  |       23         |
+
+    |      1       |   1           |     0            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 0  |       24         |
+    |      1       |   1           |     1            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 1  |       25         |
+    |      1       |   1           |     2            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 2  |       26         |
+    |      1       |   1           |     3            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 3  |       27         |
+    |      1       |   1           |     4            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 4  |       28         |
+    |      1       |   1           |     5            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 5  |       29         |
+
+    |      1       |   2           |     0            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 0  |       30         |
+    |      1       |   2           |     1            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 1  |       31         |
+    |      1       |   2           |     2            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 2  |       32         |
+    |      1       |   2           |     3            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 3  |       33         |
+    |      1       |   2           |     4            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 4  |       34         |
+    |      1       |   2           |     5            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 5  |       35         |
+</code></pre>
+<h2 id="global-threadid-calculation">Global ThreadID Calculation:<a hidden class="anchor" aria-hidden="true" href="#global-threadid-calculation">#</a></h2>
+<hr>
+<p>We use the  Global BlockId &amp; Local ThreadId to compute Global ThreadId</p>
+<p>(blockId * blockDim.x * blockDim.y * blockDim.z) + local ThreadId</p>
+<pre><code>    |   GlobalBlockID   |   LocalThreadId  |   GlobalThreadID      |
+    |-------------------|------------------|-----------------------|
+    |       0           |   0 * 36 + 0      |           0           |
+    |       0           |   0 * 36 + 1      |           1           |
+    |       0           |   0 * 36 + 2      |           2           |
+    |       0           |   0 * 36 + 3      |           3           |
+    |       0           |   0 * 36 + 4      |           4           |
+    |       0           |   0 * 36 + 5      |           5           |
+    |       0           |   0 * 36 + 6      |           6           |
+    |       0           |   0 * 36 + 7      |           7           |
+    |       0           |   0 * 36 + 8      |           8           |
+    |       0           |   0 * 36 + 9      |           9           |
+    |       0           |   0 * 36 + 10     |           10          |
+    |       0           |   0 * 36 + 11     |           11          |
+    |       0           |   0 * 36 + 12     |           12          |
+    |       0           |   0 * 36 + 13     |           13          |
+    |       0           |   0 * 36 + 14     |           14          |
+    |       0           |   0 * 36 + 15     |           15          |
+    |       0           |   0 * 36 + 16     |           16          |
+    |       0           |   0 * 36 + 17     |           17          |
+    |       0           |   0 * 36 + 18     |           18          |
+    |       0           |   0 * 36 + 19     |           19          |
+
+    |       0           |   0 * 36 + 34     |           34          |
+    |       0           |   0 * 36 + 35     |           35          |    
+
+    |       1           |   1 * 36 + 0      |           36          |
+    |       1           |   1 * 36 + 1      |           37          |
+    |       1           |   1 * 36 + 2      |           38          |
+    |       1           |   1 * 36 + 3      |           39          |
+    |       1           |   1 * 36 + 4      |           40          |
+    |       1           |   1 * 36 + 5      |           41          |
+    |       1           |   1 * 36 + 6      |           42          |
+    |       1           |   1 * 36 + 7      |           43          |
+    |       1           |   1 * 36 + 8      |           44          |
+    |       1           |   1 * 36 + 9      |           45          |
+    |       1           |   1 * 36 + 10     |           46          |
+    |       1           |   1 * 36 + 11     |           47          |
+    |       1           |   1 * 36 + 12     |           48          |
+    |       1           |   1 * 36 + 13     |           49          |
+    |       1           |   1 * 36 + 14     |           50          |
+    |       1           |   1 * 36 + 15     |           51          |
+    |       1           |   1 * 36 + 16     |           52          |
+    |       1           |   1 * 36 + 17     |           53          |
+    |       1           |   1 * 36 + 18     |           54          |
+    |       1           |   1 * 36 + 19     |           55          |
+
+    |       0           |   1 * 36 + 34     |           70          |
+    |       0           |   1 * 36 + 35     |           71          | 
+
+     ---------------
+   
+    |       5           |   5 * 36 + 0      |           180         |
+    |       5           |   5 * 36 + 1      |           181         |
+    |       5           |   5 * 36 + 2      |           182         |
+    |       5           |   5 * 36 + 3      |           183         |
+    |       5           |   5 * 36 + 4      |           184         |
+    |       5           |   5 * 36 + 5      |           185         |
+    |       5           |   5 * 36 + 6      |           186         |
+    |       5           |   5 * 36 + 7      |           187         |
+    |       5           |   5 * 36 + 8      |           188         |
+    |       5           |   5 * 36 + 9      |           189         |
+    |       5           |   5 * 36 + 10     |           190         |
+    |       5           |   5 * 36 + 11     |           191         |
+    |       5           |   5 * 36 + 12     |           192         |
+    |       5           |   5 * 36 + 13     |           193         |
+    |       5           |   5 * 36 + 14     |           194         |
+    |       5           |   5 * 36 + 15     |           195         |
+    |       5           |   5 * 36 + 16     |           196         |
+    |       5           |   5 * 36 + 17     |           197         |
+    |       5           |   5 * 36 + 18     |           198         |
+    |       5           |   5 * 36 + 19     |           199         |
+
+    |       5           |   5 * 36 + 34     |           214         |
+    |       5           |   5 * 36 + 35     |           215         | 
+</code></pre>
+<h1 id="thread-indexing---3d-grid-and-3d-block">Thread Indexing - 3D Grid and 3D Block<a hidden class="anchor" aria-hidden="true" href="#thread-indexing---3d-grid-and-3d-block">#</a></h1>
+<p>dim3 gridDim(4,3,2) = (x,y,z)
+dim3 blockDim(6,3,2)  = (x,y,z)</p>
+<p>gridDim.x = 4
+gridDim.y = 3
+gridDim.z = 2</p>
+<p>blockDim.x = 6
+blockDim.y = 3
+blockDim.z = 2</p>
+<p>Number of Blocks = 4 * 3 * 2 = 24
+Nubmer of Thread per Block = 6 * 3 * 2 = 36
+<strong>Total Number of Threads  = 24 * 36 = 864</strong></p>
+<h2 id="grid-layout-5">Grid Layout<a hidden class="anchor" aria-hidden="true" href="#grid-layout-5">#</a></h2>
+<hr>
+<p>Grid Comprises of 2 matrices of (3*4) , which can be represented as below.</p>
+<p>Total Number of Blocks = 4 * 3 * 2 = 24 Blocks</p>
+<pre><code>grid = [
+
+[  # z = 0
+    [ Block(0,0,0), Block(0,0,1), Block(0,0,2), Block(0,0,3) ],  # y = 0
+    [ Block(0,1,0), Block(0,1,1), Block(0,1,2), Block(0,1,3) ],  # y = 1
+    [ Block(0,2,0), Block(0,2,1), Block(0,2,2), Block(0,2,3) ]   # y = 2
+],
+[  # z = 1
+    [ Block(1,0,0), Block(1,0,1), Block(1,0,2), Block(1,0,3)  ],  # y = 0
+    [ Block(1,1,0), Block(1,1,1), Block(1,1,2), Block(1,1,3)  ],  # y = 1
+    [ Block(1,2,0), Block(1,2,1), Block(1,2,2), Block(1,2,3)  ]  # y = 2
+]
+
+]
+</code></pre>
+<p>A unique global block ID is computed as: <code>blockId = ( blockIdx.z * gridDim.y * gridDim.x ) + ( blockIdx.y * gridDim.x ) + blockIdx.x</code></p>
+<pre><code>    | blockIdx.z   |   blockIdx.y  |  blockIdx.x      |      Calculation                  |  Global BlockId  |
+    |------------- |---------------|------------------|-----------------------------------|------------------|
+    |      0       |   0           |     0            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 0  |       0          |
+    |      0       |   0           |     1            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 1  |       1          |
+    |      0       |   0           |     2            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 2  |       2          |
+    |      0       |   0           |     3            |    ( 0 * 3 * 4 ) + ( 0 * 4 ) + 3  |       3          |
+    |      0       |   1           |     0            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 0  |       4          |
+    |      0       |   1           |     1            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 1  |       5          |
+    |      0       |   1           |     2            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 2  |       6          |
+    |      0       |   1           |     3            |    ( 0 * 3 * 4 ) + ( 1 * 4 ) + 3  |       7          |
+    |      0       |   2           |     0            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 0  |       8          |
+    |      0       |   2           |     1            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 1  |       9          |
+    |      0       |   2           |     2            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 2  |       10         |
+    |      0       |   2           |     3            |    ( 0 * 3 * 4 ) + ( 2 * 4 ) + 3  |       11         |
+
+    |      1       |   0           |     0            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 0  |       12          |
+    |      1       |   0           |     1            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 1  |       13          |
+    |      1       |   0           |     2            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 2  |       14          |
+    |      1       |   0           |     3            |    ( 1 * 3 * 4 ) + ( 0 * 4 ) + 3  |       15          |
+    |      1       |   1           |     0            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 0  |       16          |
+    |      1       |   1           |     1            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 1  |       17          |
+    |      1       |   1           |     2            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 2  |       18          |
+    |      1       |   1           |     3            |    ( 1 * 3 * 4 ) + ( 1 * 4 ) + 3  |       19          |
+    |      1       |   2           |     0            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 0  |       20          |
+    |      1       |   2           |     1            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 1  |       21          |
+    |      1       |   2           |     2            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 2  |       22          |
+    |      1       |   2           |     3            |    ( 1 * 3 * 4 ) + ( 2 * 4 ) + 3  |       23          |
+</code></pre>
+<h2 id="local-thread-indexing-6">Local Thread Indexing:<a hidden class="anchor" aria-hidden="true" href="#local-thread-indexing-6">#</a></h2>
+<hr>
+<p>[</p>
+<pre><code>    [  # z = 0
+        [ Thread(0,0,0), Thread(0,0,1), Thread(0,0,2), Thread(0,0,3), Thread(0,0,4), Thread(0,0,5)  ],  # y = 0
+        [ Thread(0,1,0), Thread(0,1,1), Thread(0,1,2), Thread(0,1,3), Thread(0,1,4), Thread(0,1,5)  ],  # y = 1
+        [ Thread(0,2,0), Thread(0,2,1), Thread(0,2,2), Thread(0,2,3), Thread(0,2,4), Thread(0,2,5)  ]   # y = 2
+    ],
+    [  # z = 1
+        [ Thread(1,0,0), Thread(1,0,1), Thread(1,0,2), Thread(1,0,3), Thread(1,0,4), Thread(1,0,5)   ],  # y = 0
+        [ Thread(1,1,0), Thread(1,1,1), Thread(1,1,2), Thread(1,1,3), Thread(1,1,4), Thread(1,1,5)   ],  # y = 1
+        [ Thread(1,2,0), Thread(1,2,1), Thread(1,2,2), Thread(1,2,3), Thread(1,2,4), Thread(1,2,5)   ]  # y = 2
+    ]
+
+]
+</code></pre>
+<p>Local ThreadID is computed as: <code>Local ThreadId = ( threadIdx.z * blockDim.y * blockDim.x ) + ( threadIdx.y * blockDim.x ) + threadIdx.x</code></p>
+<pre><code>    | threadIdx.z  |   threadIdx.y |  threadIdx.x     |      Calculation                  |  Local ThreadId  |
+    |------------- |---------------|------------------|-----------------------------------|------------------|
+    |      0       |   0           |     0            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 0  |       0          |
+    |      0       |   0           |     1            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 1  |       1          |
+    |      0       |   0           |     2            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 2  |       2          |
+    |      0       |   0           |     3            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 3  |       3          |
+    |      0       |   0           |     4            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 4  |       4          |
+    |      0       |   0           |     5            |    ( 0 * 6 * 3 ) + ( 0 * 6 ) + 5  |       5          |
+
+    |      0       |   1           |     0            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 0  |       6          |
+    |      0       |   1           |     1            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 1  |       7          |
+    |      0       |   1           |     2            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 2  |       8          |
+    |      0       |   1           |     3            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 3  |       9          |
+    |      0       |   1           |     4            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 4  |       10         |
+    |      0       |   1           |     5            |    ( 0 * 6 * 3 ) + ( 1 * 6 ) + 5  |       11         |
+
+    |      0       |   2           |     0            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 0  |       12         |
+    |      0       |   2           |     1            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 1  |       13         |
+    |      0       |   2           |     2            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 2  |       14         |
+    |      0       |   2           |     3            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 3  |       15         |
+    |      0       |   2           |     4            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 4  |       16         |
+    |      0       |   2           |     5            |    ( 0 * 6 * 3 ) + ( 2 * 6 ) + 5  |       17         |
+
+
+    |      1       |   0           |     0            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 0  |       18         |
+    |      1       |   0           |     1            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 1  |       19         |
+    |      1       |   0           |     2            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 2  |       20         |
+    |      1       |   0           |     3            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 3  |       21         |
+    |      1       |   0           |     4            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 4  |       22         |
+    |      1       |   0           |     5            |    ( 1 * 6 * 3 ) + ( 0 * 6 ) + 5  |       23         |
+
+    |      1       |   1           |     0            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 0  |       24         |
+    |      1       |   1           |     1            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 1  |       25         |
+    |      1       |   1           |     2            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 2  |       26         |
+    |      1       |   1           |     3            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 3  |       27         |
+    |      1       |   1           |     4            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 4  |       28         |
+    |      1       |   1           |     5            |    ( 1 * 6 * 3 ) + ( 1 * 6 ) + 5  |       29         |
+
+    |      1       |   2           |     0            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 0  |       30         |
+    |      1       |   2           |     1            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 1  |       31         |
+    |      1       |   2           |     2            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 2  |       32         |
+    |      1       |   2           |     3            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 3  |       33         |
+    |      1       |   2           |     4            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 4  |       34         |
+    |      1       |   2           |     5            |    ( 1 * 6 * 3 ) + ( 2 * 6 ) + 5  |       35         |
+</code></pre>
+<h2 id="global-threadid-calculation-1">Global ThreadID Calculation:<a hidden class="anchor" aria-hidden="true" href="#global-threadid-calculation-1">#</a></h2>
+<hr>
+<p>We use the  Global BlockId &amp; Local ThreadId to compute Global ThreadId</p>
+<p>(blockId * blockDim.x * blockDim.y * blockDim.z) + local ThreadId</p>
+<pre><code>    |   GlobalBlockID   |   LocalThreadId  |   GlobalThreadID      |
+    |-------------------|------------------|-----------------------|
+    |       0           |   0 * 36 + 0      |           0           |
+    |       0           |   0 * 36 + 1      |           1           |
+    |       0           |   0 * 36 + 2      |           2           |
+    |       0           |   0 * 36 + 3      |           3           |
+    |       0           |   0 * 36 + 4      |           4           |
+    |       0           |   0 * 36 + 5      |           5           |
+    |       0           |   0 * 36 + 6      |           6           |
+    |       0           |   0 * 36 + 7      |           7           |
+    |       0           |   0 * 36 + 8      |           8           |
+    |       0           |   0 * 36 + 9      |           9           |
+    |       0           |   0 * 36 + 10     |           10          |
+    |       0           |   0 * 36 + 11     |           11          |
+    |       0           |   0 * 36 + 12     |           12          |
+    |       0           |   0 * 36 + 13     |           13          |
+    |       0           |   0 * 36 + 14     |           14          |
+    |       0           |   0 * 36 + 15     |           15          |
+    |       0           |   0 * 36 + 16     |           16          |
+    |       0           |   0 * 36 + 17     |           17          |
+    |       0           |   0 * 36 + 18     |           18          |
+    |       0           |   0 * 36 + 19     |           19          |
+
+    |       0           |   0 * 36 + 34     |           34          |
+    |       0           |   0 * 36 + 35     |           35          |    
+
+    |       1           |   1 * 36 + 0      |           36          |
+    |       1           |   1 * 36 + 1      |           37          |
+    |       1           |   1 * 36 + 2      |           38          |
+    |       1           |   1 * 36 + 3      |           39          |
+    |       1           |   1 * 36 + 4      |           40          |
+    |       1           |   1 * 36 + 5      |           41          |
+    |       1           |   1 * 36 + 6      |           42          |
+    |       1           |   1 * 36 + 7      |           43          |
+    |       1           |   1 * 36 + 8      |           44          |
+    |       1           |   1 * 36 + 9      |           45          |
+    |       1           |   1 * 36 + 10     |           46          |
+    |       1           |   1 * 36 + 11     |           47          |
+    |       1           |   1 * 36 + 12     |           48          |
+    |       1           |   1 * 36 + 13     |           49          |
+    |       1           |   1 * 36 + 14     |           50          |
+    |       1           |   1 * 36 + 15     |           51          |
+    |       1           |   1 * 36 + 16     |           52          |
+    |       1           |   1 * 36 + 17     |           53          |
+    |       1           |   1 * 36 + 18     |           54          |
+    |       1           |   1 * 36 + 19     |           55          |
+
+    |       0           |   1 * 36 + 34     |           70          |
+    |       0           |   1 * 36 + 35     |           71          | 
+
+     ---------------
+   
+    |       23          |   23 * 36 + 0      |           828         |
+    |       23          |   23 * 36 + 1      |           829         |
+    |       23          |   23 * 36 + 2      |           830         |
+    |       23          |   23 * 36 + 3      |           831         |
+    |       23          |   23 * 36 + 4      |           832         |
+    |       23          |   23 * 36 + 5      |           833         |
+    |       23          |   23 * 36 + 6      |           834         |
+    |       23          |   23 * 36 + 7      |           835         |
+    |       23          |   23 * 36 + 8      |           836         |
+    |       23          |   23 * 36 + 9      |           837         |
+    |       23          |   23 * 36 + 10     |           838         |
+    |       23          |   23 * 36 + 11     |           839         |
+    |       23          |   23 * 36 + 12     |           840         |
+    |       23          |   23 * 36 + 13     |           841         |
+    |       23          |   23 * 36 + 14     |           842         |
+    |       23          |   23 * 36 + 15     |           843         |
+    |       23          |   23 * 36 + 16     |           844         |
+    |       23          |   23 * 36 + 17     |           845         |
+    |       23          |   23 * 36 + 18     |           846         |
+    |       23          |   23 * 36 + 19     |           847         |
+
+    |       23          |   23 * 36 + 34     |           862         |
+    |       23          |   23 * 36 + 35     |           863         | 
+</code></pre>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:55868/">My ML Portfolio</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

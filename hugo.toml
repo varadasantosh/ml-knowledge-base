@@ -1,0 +1,13 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'My ML Portfolio'
+theme = "hugo-PaperMod"
+
+[params]
+    ShowBreadCrumbs = true
+    ShowToc = true
+    math = true
+    author= "Varada V N A Santosh"
+    description ="ML Engineer"
+    homeInfoParams = { Title = "Welcome to My Portfolio", Content = "Explore my ML projects, Jupyter notebooks, and AI concepts." }
+
