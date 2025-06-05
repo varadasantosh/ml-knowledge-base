@@ -2,16 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:55868/cuda/cuda-kernel-workflow/</loc>
-  </url><url>
-    <loc>http://localhost:55868/cuda/gemm/</loc>
-  </url><url>
-    <loc>http://localhost:55868/cuda/naive_gemm/</loc>
-  </url><url>
-    <loc>http://localhost:55868/cuda/thread-indexing/</loc>
-  </url><url>
-    <loc>http://localhost:55868/cuda/tile_gemm/</loc>
-  </url><url>
     <loc>http://localhost:55868/transformer/attention/attention/</loc>
   </url><url>
     <loc>http://localhost:55868/transformer/attention/multihead_attention/</loc>
@@ -26,17 +16,25 @@
   </url><url>
     <loc>http://localhost:55868/cuda/</loc>
   </url><url>
+    <loc>http://localhost:55868/cuda/cuda-kernel-workflow/</loc>
+  </url><url>
     <loc>http://localhost:55868/transformer/prepare_dataset/</loc>
   </url><url>
     <loc>http://localhost:55868/training/distributed-training/</loc>
   </url><url>
+    <loc>http://localhost:55868/cuda/thread-indexing/</loc>
+  </url><url>
     <loc>http://localhost:55868/</loc>
+  </url><url>
+    <loc>http://localhost:55868/cuda/naive_gemm/</loc>
   </url><url>
     <loc>http://localhost:55868/transformer/positionalembeddings/</loc>
   </url><url>
     <loc>http://localhost:55868/training/pytorch_dpp/</loc>
   </url><url>
     <loc>http://localhost:55868/tags/</loc>
+  </url><url>
+    <loc>http://localhost:55868/cuda/tile_gemm/</loc>
   </url><url>
     <loc>http://localhost:55868/training/</loc>
   </url><url>
