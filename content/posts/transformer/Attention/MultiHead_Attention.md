@@ -1,3 +1,11 @@
+
+---
+title: "Peek Into MultiHead Attention"
+---
+
+
+<!--more-->
+
 # MultiHead Attention
 
 The Multi Head Attention is an extension to Self Attention, while the Self Attentin defined in Transfomers helps us to overcome limitations faced by RNN's, if we look at the above pitcutre we are calculating the attention over all heads of Llama Model , Multi Head Attention helps us to attend diferent aspects of elements in a sequence, in such case single weighted average is not

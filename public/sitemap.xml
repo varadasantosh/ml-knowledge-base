@@ -2,42 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/transformer/attention/attention/</loc>
+    <loc>http://localhost:1313/about/</loc>
+    <lastmod>2025-06-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/transformer/attention/multihead_attention/</loc>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2025-06-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/transformer/positionalembeddings/rope-2/</loc>
+    <loc>http://localhost:1313/posts/transformer/positionalembeddings/rope/</loc>
   </url><url>
-    <loc>http://localhost:1313/transformer/positionalembeddings/rope/</loc>
-  </url><url>
-    <loc>http://localhost:1313/transformer/attention/</loc>
+    <loc>http://localhost:1313/posts/transformer/attention/</loc>
   </url><url>
     <loc>http://localhost:1313/categories/</loc>
   </url><url>
-    <loc>http://localhost:1313/cuda/</loc>
+    <loc>http://localhost:1313/posts/cuda/</loc>
   </url><url>
-    <loc>http://localhost:1313/cuda/cuda-kernel-workflow/</loc>
+    <loc>http://localhost:1313/posts/cuda/cuda-kernel-workflow/</loc>
   </url><url>
-    <loc>http://localhost:1313/transformer/prepare_dataset/</loc>
+    <loc>http://localhost:1313/posts/transformer/prepare_dataset/</loc>
   </url><url>
-    <loc>http://localhost:1313/training/distributed-training/</loc>
+    <loc>http://localhost:1313/posts/training/distributed-training/</loc>
   </url><url>
-    <loc>http://localhost:1313/cuda/thread-indexing/</loc>
+    <loc>http://localhost:1313/posts/transformer/attention/attention/</loc>
   </url><url>
-    <loc>http://localhost:1313/</loc>
+    <loc>http://localhost:1313/posts/transformer/attention/flash_attention/</loc>
   </url><url>
-    <loc>http://localhost:1313/cuda/naive_gemm/</loc>
+    <loc>http://localhost:1313/posts/cuda/thread-indexing/</loc>
   </url><url>
-    <loc>http://localhost:1313/transformer/positionalembeddings/</loc>
+    <loc>http://localhost:1313/posts/cuda/naive_gemm/</loc>
   </url><url>
-    <loc>http://localhost:1313/training/pytorch_dpp/</loc>
+    <loc>http://localhost:1313/posts/transformer/attention/multihead_attention/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/transformer/positionalembeddings/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/training/pytorch_dpp/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/transformer/positionalembeddings/rope-2/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>
   </url><url>
-    <loc>http://localhost:1313/cuda/tile_gemm/</loc>
+    <loc>http://localhost:1313/posts/cuda/tile_gemm/</loc>
   </url><url>
-    <loc>http://localhost:1313/training/</loc>
+    <loc>http://localhost:1313/posts/training/</loc>
   </url><url>
-    <loc>http://localhost:1313/transformer/</loc>
+    <loc>http://localhost:1313/posts/transformer/</loc>
   </url>
 </urlset>

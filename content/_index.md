@@ -1,8 +1,10 @@
 ---
 title: "My Learnings"
+layout: "home"
 description: "Explore my ML projects, Jupyter notebooks, and AI concepts."
 summary: "A collection of my Deep Learning and GenAI learning journey."
 ---
+
 
 # Welcome to My ML Portfolio
 

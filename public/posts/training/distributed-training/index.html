@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Distributed Training | </title>
+<meta name="keywords" content="">
+<meta name="description" content="Distributed Training - ">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:1313/posts/training/distributed-training/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.8fe10233a706bc87f2e08b3cf97b8bd4c0a80f10675a143675d59212121037c0.css" integrity="sha256-j&#43;ECM6cGvIfy4Is8&#43;XuL1MCoDxBnWhQ2ddWSEhIQN8A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/training/distributed-training/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/training/">Training Large Languge Models</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Distributed Training
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#reference-articles" aria-label="Reference Articles">Reference Articles</a><ul>
+                        
+                <li>
+                    <a href="#nccl-primitives---docs" aria-label="NCCL Primitives - DOCS">NCCL Primitives - DOCS</a></li>
+                <li>
+                    <a href="#distributed-data-parallel" aria-label="Distributed Data Parallel">Distributed Data Parallel</a></li>
+                <li>
+                    <a href="#pipeline-parallelism" aria-label="Pipeline Parallelism">Pipeline Parallelism</a></li></ul>
+                </li>
+                <li>
+                    <a href="#steps-performed-during-fsdp" aria-label="Steps performed during FSDP">Steps performed during FSDP</a></li>
+                <li>
+                    <a href="#layer-1---forward-propagation" aria-label="Layer 1 - Forward Propagation:">Layer 1 - Forward Propagation:</a></li>
+                <li>
+                    <a href="#layer-2---forward-propagation" aria-label="Layer 2 - Forward Propagation:">Layer 2 - Forward Propagation:</a></li>
+                <li>
+                    <a href="#layer2---backward-propagation" aria-label="Layer2 - Backward Propagation:">Layer2 - Backward Propagation:</a></li>
+                <li>
+                    <a href="#layer1---backward-propagation" aria-label="Layer1 - Backward Propagation:">Layer1 - Backward Propagation:</a></li>
+                <li>
+                    <a href="#fsdp-workflow-" aria-label="FSDP Workflow:-">FSDP Workflow:-</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="reference-articles">Reference Articles<a hidden class="anchor" aria-hidden="true" href="#reference-articles">#</a></h1>
+<ul>
+<li><a href="https://tinkerd.net/blog/machine-learning/distributed-training/">https://tinkerd.net/blog/machine-learning/distributed-training/</a></li>
+<li><a href="https://www.youtube.com/watch?v=toUSzwR0EV8&amp;t=2s">https://www.youtube.com/watch?v=toUSzwR0EV8&amp;t=2s</a></li>
+<li><a href="https://github.com/huggingface/blog/blob/main/pytorch-fsdp.md">https://github.com/huggingface/blog/blob/main/pytorch-fsdp.md</a></li>
+<li><a href="https://blog.clika.io/fsdp-1/">https://blog.clika.io/fsdp-1/</a></li>
+</ul>
+<p>Before exploring the different techniques of Distributed Training, it is essential to understand why it is needed.</p>
+<p>With advancements in both technology and hardware &amp; availability of data  the size of deep learning models has grown significantly. Modern Large Language Models (LLMs) are trained on massive datasets and have billions of parameters, making them too large to fit within the memory of a single GPU.</p>
+<p>If such models were trained on a single GPU, the process could take hundreds of years to complete. Distributed training techniques, such as Fully Sharded Data Parallel (FSDP), help overcome these limitations by distributing the workload across multiple GPUs. This not only accelerates training but also enables the development of increasingly larger and more capable models. The more data a model can learn from, the better its performance.</p>
+<p>A model comprises of below</p>
+<ul>
+<li>Parameters (Weights) - Calculated during Forward Propagation</li>
+<li>Gradients - Calculate during Backward Propagation</li>
+<li>Optimizer State (Ex:- Adam Optimizer has additionally has 3 more parameters Momentum, Velocity )</li>
+<li>Token Embeddings</li>
+<li>Positional Embeddings</li>
+</ul>
+<h2 id="nccl-primitives---docs">NCCL Primitives - <a href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/usage/collectives.html">DOCS</a><a hidden class="anchor" aria-hidden="true" href="#nccl-primitives---docs">#</a></h2>
+<ul>
+<li>Broadcast</li>
+<li>Reduce</li>
+<li>All Reduce</li>
+<li>All Gather</li>
+<li>Reduce Scatter</li>
+</ul>
+<h2 id="distributed-data-parallel">Distributed Data Parallel<a hidden class="anchor" aria-hidden="true" href="#distributed-data-parallel">#</a></h2>
+<p>Deep Learning models consist of two main components mentioned below . Distributed Data Parallel (DDP) helps improve training speed, particularly when the number of parameters is relatively small, but the dataset is large.</p>
+<ul>
+<li>parameters (model weights)</li>
+<li>data.</li>
+</ul>
+<p>When a dataset is too large to fit into GPU VRAM, there are two main options:</p>
+<ul>
+<li>Scaling the infrastructure (adding more GPUs or nodes). However, this has limitations since GPU VRAM cannot be scaled indefinitely.</li>
+<li>Dividing the dataset into smaller batches so that each batch fits into the available VRAM.</li>
+</ul>
+<p>While batching allows training on large datasets, training sequentially (one batch at a time) can be inefficient and slow. This is where Distributed Data Parallel (DDP) comes into play.</p>
+<p>With DDP, instead of processing batches sequentially, we distribute batches across multiple GPUs and train in parallel. For example, if we have 4 GPUs in a single node, we can divide the dataset into 4 batches and assign one batch to each GPU.</p>
+<p>To enable this, we need to replicate the model across all GPUs, ensuring each GPU has an identical copy of the model. Each GPU processes a different batch of data independently. After processing, gradients are synchronized across all GPUs using an all-reduce operation (<strong>NCCL Library</strong> ), ensuring model updates remain consistent. The same can also be extended to GPU across different Nodes.</p>
+<p>There is lot happening behind the scenes for co-ordinating the training process between GPU&rsquo;s (Intra Node) &amp; Inter Node. Below are the high- level steps that are performed</p>
+<ol>
+<li>Divide the Batches across GPU&rsquo;s</li>
+<li>Go through the Forward Pass (Each Batch that resides on respective GPU)</li>
+<li>Calculate Local Gradients (on Each GPU)</li>
+<li>Perform All Reduce Operation to bring all the Local Gradients to One of the GPU s'</li>
+<li>Once the Gradients are accumulated and calculated , pass the Gradients back to all the GPU&rsquo;s</li>
+<li>Each GPU calculates peforms the Update Optimizater State for the corresponding Weights (Parameters)</li>
+</ol>
+<!-- raw HTML omitted -->
+<h2 id="pipeline-parallelism">Pipeline Parallelism<a hidden class="anchor" aria-hidden="true" href="#pipeline-parallelism">#</a></h2>
+<p>As we briefly looked at the Distributed Data Parallel, it address the challenges with Model Training with Large Dataset and Model can fit on single GPU, after the birth of Transformer Architecture we evidenced unprecednted increase in the size of the model , each Model has large number
+of parameters, if the model can&rsquo;t be fit into memory <strong>Distributed Data Parallel</strong> alone would not solve the problem as this approach relies on fitting entire model in Memory, Pipeline Parllelsim to the rescue which pivot the model to be ditributed across GPU&rsquo;s rather than distributing data, Pipeline Parallelism as a concept can be further implemented in two different ways</p>
+<ul>
+<li>
+<p>Vertical splitting the Model (<strong>Model Parallelism</strong>)</p>
+<p>In this approach the layers of the model are split across the available GPU&rsquo;s ex:- if we have 4 Hidden Layers and 4 GPU&rsquo;s split layers and train each layer on one GPU,
+the downside of this approach is while one layer is being trained on one GPU the other GPU sits idle , which is not efficient way of using the precious resources.</p>
+</li>
+<li>
+<p>Horizontal Spllitting of Model(<strong>Tensor Parallelism</strong>)</p>
+<p>Here the parameters, Gradients &amp; Optimizer States are split across multiple GPU&rsquo;s meaning if we need to calcualte Dot Product W.X, We split these matrices across 4 GPU&rsquo;s and calculate
+the dot product across different GPU&rsquo;s and bring the Parameters to one GPU for calculating the Gradients for Backward Propagation using NCCL Operations</p>
+</li>
+</ul>
+<h1 id="steps-performed-during-fsdp">Steps performed during FSDP<a hidden class="anchor" aria-hidden="true" href="#steps-performed-during-fsdp">#</a></h1>
+<p>Let us consider the Model Architure with below configuration</p>
+<pre tabindex="0"><code>. Number of GPU&#39;s- 4
+. Number of Layers - 2
+. Number of Neurons in each Hidden Layer-4 
+. Input Features - 4
+. Total Number of rows input data - 12
+. 12 rows divide across 4 GPU - Each GPU gets batch of 3 rows
+</code></pre><p>Two Layers , each with Matrices $W_{1}$, $W_{2}$ with below dimensions</p>
+<ul>
+<li>$W_{1}$ -  4 * 4 (Input Features- 4, Number of Neurons in Each Layer-4)</li>
+<li>$W_{2}$ -  4 * 4 (Output from Activation of First Layer, Number of Neurons in Each Layer-4)</li>
+</ul>
+<h1 id="layer-1---forward-propagation">Layer 1 - Forward Propagation:<a hidden class="anchor" aria-hidden="true" href="#layer-1---forward-propagation">#</a></h1>
+<ul>
+<li>Input Data on Each GPU , each GPU has data of Batch size of 3 Rows &amp; 4 Columns(features) 3 * 4 matrix</li>
+<li>$w_{1}$ is split across 4 GPU&rsquo;s , each GPU has weight matrix of size 1 * 4</li>
+<li>Peform <strong>All Gather</strong> Collective Operation to get all the Weights of the corresponding Shard &amp; Layer</li>
+<li>After <strong>All Gather</strong> Operation all GPU&rsquo;s has full weight matrix of Layer-1 to proceed with <strong>GEMM</strong> like mentioned below</li>
+<li>GPU-0 - $\hat{y_{0}}$ = $w_{1}$ * $x_{0}$ + $b_{1}$</li>
+<li>GPU-1 - $\hat{y_{1}}$ = $w_{1}$ * $x_{1}$ + $b_{1}$</li>
+<li>GPU-2 - $\hat{y_{2}}$ = $w_{1}$ * $x_{2}$ + $b_{2}$</li>
+<li>GPU-3 - $\hat{y_{3}}$  = $w_{1}$ * $x_{3}$ + $b_{3}$</li>
+<li>After calculating <strong>GEMM</strong> and <strong>Activations</strong>, Weights gathered from other GPU&rsquo;s for the corresponding shard are freed, each GPU would remain
+with weight matrix of 1 * 4 size</li>
+<li>Activations are stored in each GPU, these are required while calculating Gradients during Backward Propagation</li>
+</ul>
+<h1 id="layer-2---forward-propagation">Layer 2 - Forward Propagation:<a hidden class="anchor" aria-hidden="true" href="#layer-2---forward-propagation">#</a></h1>
+<ul>
+<li>Steps would remain same like in Layer-1</li>
+<li>Output of Layer-1 would be passed as input to Layer-1</li>
+<li>Output of Layer-1 is of Size 3 * 4 ($x_{0}$ =  3 * 4  &amp; $w_{1}$ =  4 * 4 )</li>
+<li>Layer2 has 4 features as input and it has 4 hidden Layers hence the weight matrix $w_{2}$ is of shape 4 * 4</li>
+<li>Like in Layer-1 $w_{2}$ is split across 4 GPU&rsquo;s , each GPU has weight matrix of size 1 * 4</li>
+<li>Peform <strong>All Gather</strong> Collective Operation to get all the Weights of the corresponding Shard &amp; Layer</li>
+<li>After <strong>All Gather</strong> Operation all GPU&rsquo;s has full weight matrix of Layer-2 to proceed with <strong>GEMM</strong> like mentioned below</li>
+<li>After calculating <strong>GEMM</strong> and <strong>Activations</strong>, Weights gathered from other GPU&rsquo;s for the corresponding shard are freed,
+each GPU would remain with weight matrix of 1 * 4 size</li>
+<li>Activations are stored in each GPU, these are required while calculating Gradients during Backward Propagation</li>
+</ul>
+<h1 id="layer2---backward-propagation">Layer2 - Backward Propagation:<a hidden class="anchor" aria-hidden="true" href="#layer2---backward-propagation">#</a></h1>
+<ul>
+<li>Peform <strong>All Gather</strong> Operation on Layer-2 for gathering all weights of the Shard &amp; Layer, this is required for Gradient Calculation</li>
+<li>After <strong>All Gather</strong> Weights of Layer-2 are present on all the GPU&rsquo;s allowing us to perform Gradient Calculations</li>
+<li>Each GPU perform Gradient Calculation Locally</li>
+<li>But the Gradients calculated on each GPU are partial,as each of them are working on different batch of data, hence the gradient needs to be
+aggregated</li>
+<li>to achieve the aggregation of gradients from all GPU&rsquo;s and sending the relevant gradients for each GPU to be adjust we take help of
+<strong>Reduce Scatter</strong> operation (Refer to NCCL Operations)</li>
+<li>After the <strong>Reduce Scatter</strong> Operation each GPU now have the Gradients for Layer-2 each Gradient matrix of size  1 * 4</li>
+</ul>
+<h1 id="layer1---backward-propagation">Layer1 - Backward Propagation:<a hidden class="anchor" aria-hidden="true" href="#layer1---backward-propagation">#</a></h1>
+<ul>
+<li>Backward Propagation Remains as above</li>
+<li>Peform <strong>All Gather</strong> Operation on Layer-1 for gathering all weights of the Shard &amp; Layer, this is required for Gradient Calculation</li>
+<li>After <strong>All Gather</strong> Weights of Layer-1 are present on all the GPU&rsquo;s allowing us to perform Gradient Calculations</li>
+<li>Each GPU perform Gradient Calculation Locally</li>
+<li>But the Gradients calculated on each GPU are partial,as each of them are working on different batch of data, hence the gradient needs to be
+aggregated</li>
+<li>to achieve the aggregation of gradients from all GPU&rsquo;s and sending the relevant gradients for each GPU to be adjust we take help of
+<strong>Reduce Scatter</strong> operation (Refer to NCCL Operations)</li>
+<li>After the <strong>Reduce Scatter</strong> Operation each GPU now have the Gradients for Layer-1 each Gradient matrix of size  1 * 4</li>
+<li>This gradients are now would be used to perform Optimizer Update to adjust the weights</li>
+</ul>
+<p><strong>Important Note</strong> <br>
+During the Process the Weight Updates are performed after Complete Forward Pass &amp; Backward Pass, Though the Gradeints for
+Layer-2 are calculated Before Layer-1 Gradeints, we can&rsquo;t update Weights for Layer-1 until the Gradeints for Layer-1 are calculated
+because if we update the Weights for Layer-2 , it would impact the Caclulation of Gradients for Layer-1 hence the weights are updated
+only after completed Backward Pass through from last layer to first layer, after this cycle the Weights can be updated across all the
+layers</p>
+<h1 id="fsdp-workflow-">FSDP Workflow:-<a hidden class="anchor" aria-hidden="true" href="#fsdp-workflow-">#</a></h1>
+<hr>
+<p><img alt="image" loading="lazy" src="https://github.com/user-attachments/assets/3b773598-b5b8-457c-aa45-c6995935c641"></p>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/"></a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

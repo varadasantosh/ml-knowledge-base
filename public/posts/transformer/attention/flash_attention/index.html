@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Flash Attention | </title>
+<meta name="keywords" content="">
+<meta name="description" content="Flash Attention - ">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:1313/posts/transformer/attention/flash_attention/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.8fe10233a706bc87f2e08b3cf97b8bd4c0a80f10675a143675d59212121037c0.css" integrity="sha256-j&#43;ECM6cGvIfy4Is8&#43;XuL1MCoDxBnWhQ2ddWSEhIQN8A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/transformer/attention/flash_attention/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/transformer/">Transformer Models</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/transformer/attention/">Attention Mechanisms</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Flash Attention
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#problems-with-naive-attention" aria-label="Problems with Naive Attention">Problems with Naive Attention</a></li>
+                <li>
+                    <a href="#solution---flash-attention" aria-label="Solution - Flash Attention">Solution - Flash Attention</a></li>
+                <li>
+                    <a href="#online-softmax-calculation" aria-label="Online Softmax Calculation">Online Softmax Calculation</a></li>
+                <li>
+                    <a href="#illustration-of-standard-attention-vs-flash-attention-from-hugging-face-" aria-label="Illustration of Standard Attention vs Flash Attention from Hugging Face:-">Illustration of Standard Attention vs Flash Attention from Hugging Face:-</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="problems-with-naive-attention">Problems with Naive Attention<a hidden class="anchor" aria-hidden="true" href="#problems-with-naive-attention">#</a></h1>
+<p>Flash Attention is IO Aware &amp; Exact Attention. To understand this, we need to be aware of Vanilla Attention (Self-Attention), which is pivotal for Transformer Architecture. Additionally, having some knowledge of GPU Architecture is beneficial.</p>
+<p><strong>Self-Attention Recap</strong>: In order to calculate Self-Attention, the following steps are performed:</p>
+<p>$$
+\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{QK^T}{\sqrt{d_k}} \right) V
+$$</p>
+<ol>
+<li>
+<p>The input embeddings <code>x</code> with dimensions (batch_size, sequence_len, n_dim) are passed through three linear layers with weights  $W_q$ ,  $W_k$  &amp;  $W_v$ . As a result, we obtain the matrices <strong>Q</strong>, <strong>K</strong>, and <strong>V</strong>, which have the same dimensions as <code>x</code>:</p>
+<ul>
+<li>( Q ): Query matrix</li>
+<li>( K ): Key matrix</li>
+<li>( V ): Value matrix</li>
+<li>( d_k ): Dimensionality of the key vectors</li>
+</ul>
+</li>
+<li>
+<p><strong>Q</strong> - Query Matrix &amp;  <strong>K</strong> -Key Matrix are moved to SM (Streaming Multiprocessor) On-chip Memory for Matrix Multiplication Operation (<code>GEMM</code>), Result of this operation is moved to HBM(High Bandwidth Memory) in GPU</p>
+</li>
+<li>
+<p>We need to apply Masking on the result of Multiplication of <strong>Q</strong> &amp; <strong>$${K^T}$$</strong> to ensure padding tokens get zero probabilities after applying softmax ,
+this result again needs to be moved from HBM to SM On-Chip Memory.</p>
+</li>
+<li>
+<p>After applying Masking operation, the same matrix is moved from On-chip Memory to HBM</p>
+</li>
+<li>
+<p>Next step would be to apply Softmax operation on the matrix whose size is (batch_size,seq_len,seq_len), to apply softmax the matrix is moved from HBM to On-chip memory.</p>
+</li>
+<li>
+<p>After the Softmax is calculated , result of the same is moved to HBM(High Bandwidth Memory), The size of the Softmax matrix would be of <strong>(batch_size,seq_len,seq_len)</strong></p>
+</li>
+<li>
+<p>Next step is to perform Matrix multiplication between the probabilities(Normalizing the dot product between Q,K) calculated in earlier step using Softmax &amp; the <strong>V</strong> Values matrix whose size is <strong>(batch_size,seq_len,n_dim)</strong>, hence these both matrices need to be moved from HBM to On-Chip memory</p>
+</li>
+<li>
+<p>Matrix multiplication is performed between Softmax Values &amp; <strong>V</strong> values matrix to get the final attention score</p>
+</li>
+</ol>
+<p>From the above steps we can infer that majorly the there are two types of operations one being Matrix Multiplications which is FLOPS(Floating Point Operations), other is data movement    <br>
+between DRAM(HBM) to SRAM (On-Chip Memory), due to massive parallel processing capabilities of GPU Floating point operations are calculated faster , once this is done threads present inside
+the  <strong>SM</strong> are idle until they get new set of instructions and Data on which these instructions need to be performed , <strong>this makes these operations Memory bound as the time taken to move
+the data between SRAM (On Chip Memory) &amp; DRAM  is more than the time taken to perform FLOPS (Matrix Multiplicaton in this case)</strong></p>
+<h1 id="solution---flash-attention">Solution - Flash Attention<a hidden class="anchor" aria-hidden="true" href="#solution---flash-attention">#</a></h1>
+<p>Flash Attention address this problem by dividing the matrices into multiple blocks , and peforms fusing of kernal operations ( Kernels are functions) , fusing Kernel operations can be
+considered as chaining different functions on each set of blocks, this fusing of kernel operation reduces the need for storing of intermediate results and memory transfers, also the same
+calculations are recomputed during backward propagation , instead of storing them and moving them between memory layers, though these two operations increase the number of FLOPS the time
+taken to calculate the attention matrix is less duration this reduces the I/O operations which is bottleneck in Self
+Attention.</p>
+<p>Flash attention divides the matrix into small tiles and the operations like dot product between Q,${K^T}$ are performed and result of this is passed to another kernel function which
+calculates mask &amp; passes the output to another function that calculates softmax , furhter this result is passed to another kernel which calculates the dot product between softmax values and
+V matrix, as these data is passed through multiple kernel functions within SRAM we don&rsquo;t store the intermediate results on HBM.</p>
+<p>But here lies the major challenge, inorder to calculate the Softmax we need all the values at once to perfrom sum operation  which is required to calculate(denominator), this is required
+as we need to divide each element of the dot matrix by sum of all the elments(which is Softmax formula) , as we are dividing the matrix into multiple blocks to perfrom kernel fusion
+(chaining kernel functions like Dot product, masking and Softmax ) calculating the total sum is not possible ,  hence we need a way to calculate the softmax for these batches accurately,
+fortunately this can be addressed calculatin online softmax, which uses tiling technique which is metioned in NVIDIA researcher <a href="https://arxiv.org/abs/1805.02867">paper</a>, this approach
+allow us to calculate the softmax for individual blocks and when we are merging them we incrementally calculate the final softmax using the formaula mentioned below until we reach final
+merging on all the blocks</p>
+<!-- raw HTML omitted -->
+<p>$$
+\text{softmax}(x_i) = \frac{\exp(x_i)}{\sum_{j=1}^{n}\exp(x_j)}
+$$</p>
+<p><strong>Few intresting points to note here is the number of FLOPS (Floating point operations) are more in number than the Self Attention , but the time taken is less compared to Self Attention as we are working on small cunks which makes it faster move the data between HBM and On-Chip memory and On-chip Memory to HBM memory , as we are dividing into multiple chunks this also allows us to increase Sequence Lenght which is Context Length of model, hence we can have more context length for the training model</strong>.</p>
+<h1 id="online-softmax-calculation"><a href="https://github.com/varadasantosh/deep-learning-notes/blob/tensorflow/Flash_Attention_Calculations(Online_Softmax).ipynb">Online Softmax Calculation</a><a hidden class="anchor" aria-hidden="true" href="#online-softmax-calculation">#</a></h1>
+<p><a href="https://colab.research.google.com/github/varadasantosh/deep-learning-notes/blob/tensorflow/Flash_Attention_Calculations(Online_Softmax).ipynb">Notebook</a></p>
+<p>Reference Links:-</p>
+<ol>
+<li><a href="https://horace.io/brrr_intro.html">https://horace.io/brrr_intro.html</a></li>
+<li><a href="https://training.continuumlabs.ai/inference/why-is-inference-important/flash-attention-2">https://training.continuumlabs.ai/inference/why-is-inference-important/flash-attention-2</a></li>
+<li><a href="https://www.youtube.com/watch?v=IoMSGuiwV3g">https://www.youtube.com/watch?v=IoMSGuiwV3g</a></li>
+<li><a href="https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad#:~:text=So%20basically%2C%20in%20order%20to,statistics%20for%20each%20of%20the">https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad#:~:text=So%20basically%2C%20in%20order%20to,statistics%20for%20each%20of%20the</a></li>
+<li><a href="https://www.nvidia.com/en-us/on-demand/session/gtc24-s62546/">https://www.nvidia.com/en-us/on-demand/session/gtc24-s62546/</a></li>
+</ol>
+<h1 id="illustration-of-standard-attention-vs-flash-attention-from-hugging-face-">Illustration of Standard Attention vs Flash Attention from Hugging Face:-<a hidden class="anchor" aria-hidden="true" href="#illustration-of-standard-attention-vs-flash-attention-from-hugging-face-">#</a></h1>
+<hr>
+<p><img alt="image" loading="lazy" src="https://github.com/user-attachments/assets/8ce6ec2f-2df2-4d5e-b643-598ba3b27097"></p>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/"></a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

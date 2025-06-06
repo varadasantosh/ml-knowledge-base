@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Naive Matrix Multiplication | </title>
+<meta name="keywords" content="">
+<meta name="description" content="Naive Matrix Multiplication - ">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:1313/posts/cuda/naive_gemm/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.8fe10233a706bc87f2e08b3cf97b8bd4c0a80f10675a143675d59212121037c0.css" integrity="sha256-j&#43;ECM6cGvIfy4Is8&#43;XuL1MCoDxBnWhQ2ddWSEhIQN8A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/cuda/naive_gemm/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/cuda/">CUDA Programming</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Naive Matrix Multiplication
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#install-nvcc-for-jupyter" aria-label="Install NVCC For Jupyter">Install NVCC For Jupyter</a></li>
+                <li>
+                    <a href="#load-the-nvcc-extension" aria-label="Load the NVCC Extension">Load the NVCC Extension</a></li>
+                <li>
+                    <a href="#matrix-multipliation-with-1d-grid--1d-block" aria-label="Matrix Multipliation with 1D Grid &amp; 1D Block">Matrix Multipliation with 1D Grid &amp; 1D Block</a></li>
+                <li>
+                    <a href="#matrix-multiplications-using-using-2d-grid--2d-block" aria-label="Matrix Multiplications using using 2D Grid &amp; 2D Block">Matrix Multiplications using using 2D Grid &amp; 2D Block</a></li>
+                <li>
+                    <a href="#matrix-multiplications-using-using-1d-grid--3d-block" aria-label="Matrix Multiplications using using 1D Grid &amp; 3D Block">Matrix Multiplications using using 1D Grid &amp; 3D Block</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="install-nvcc-for-jupyter">Install NVCC For Jupyter<a hidden class="anchor" aria-hidden="true" href="#install-nvcc-for-jupyter">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>pip install nvcc4jupyter
+</span></span></code></pre></div><pre><code>Requirement already satisfied: nvcc4jupyter in /system/conda/miniconda3/envs/cloudspace/lib/python3.10/site-packages (1.2.1)
+Note: you may need to restart the kernel to use updated packages.
+</code></pre>
+<h1 id="load-the-nvcc-extension">Load the NVCC Extension<a hidden class="anchor" aria-hidden="true" href="#load-the-nvcc-extension">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%</span>load_ext nvcc4jupyter
+</span></span></code></pre></div><pre><code>Source files will be saved in &quot;/tmp/tmp9pqtvywp&quot;.
+</code></pre>
+<h1 id="matrix-multipliation-with-1d-grid--1d-block">Matrix Multipliation with 1D Grid &amp; 1D Block<a hidden class="anchor" aria-hidden="true" href="#matrix-multipliation-with-1d-grid--1d-block">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%%</span>cuda
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;stdio.h&gt;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define N 8</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ void gemm(int<span style="color:#f92672">*</span> dA, int<span style="color:#f92672">*</span> dB, int<span style="color:#f92672">*</span> dC, int mat_dim)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        int threadId <span style="color:#f92672">=</span> (blockIdx<span style="color:#f92672">.</span>x<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>x) <span style="color:#f92672">+</span>threadIdx<span style="color:#f92672">.</span>x;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        int sum<span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        int row  <span style="color:#f92672">=</span> threadId<span style="color:#f92672">/</span>mat_dim;
+</span></span><span style="display:flex;"><span>        int col  <span style="color:#f92672">=</span> threadId<span style="color:#f92672">%</span>mat_dim; 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (row <span style="color:#f92672">&lt;</span> N <span style="color:#f92672">&amp;&amp;</span> col <span style="color:#f92672">&lt;</span> N)
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> (int k<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span> ; k<span style="color:#f92672">&lt;</span>mat_dim; k<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>            {
+</span></span><span style="display:flex;"><span>              sum <span style="color:#f92672">=</span> sum <span style="color:#f92672">+</span> (dA[(row<span style="color:#f92672">*</span>mat_dim)<span style="color:#f92672">+</span>k] <span style="color:#f92672">*</span> dB[(k<span style="color:#f92672">*</span>mat_dim)<span style="color:#f92672">+</span>col]);
+</span></span><span style="display:flex;"><span>             }
+</span></span><span style="display:flex;"><span>           dC[threadId] <span style="color:#f92672">=</span> sum;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__host__ int main(){
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   printf(<span style="color:#e6db74">&#34;GEMM Started</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);     
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> A;
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> B;
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> C;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> dA;
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> dB;
+</span></span><span style="display:flex;"><span>   int<span style="color:#f92672">*</span> dC;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   A <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>   B <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>   C <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  cudaMalloc((void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dA, N<span style="color:#f92672">*</span>N <span style="color:#f92672">*</span> sizeof(int));
+</span></span><span style="display:flex;"><span>  cudaMalloc((void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dB, N<span style="color:#f92672">*</span>N <span style="color:#f92672">*</span> sizeof(int));
+</span></span><span style="display:flex;"><span>  cudaMalloc((void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dC, N<span style="color:#f92672">*</span>N <span style="color:#f92672">*</span> sizeof(int));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">for</span> (int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>) 
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>       <span style="color:#66d9ef">for</span> (int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span>) 
+</span></span><span style="display:flex;"><span>       {
+</span></span><span style="display:flex;"><span>           A[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j;
+</span></span><span style="display:flex;"><span>           B[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>   } 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   cudaMemcpy(dA, A, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>   cudaMemcpy(dB, B, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   
+</span></span><span style="display:flex;"><span>   gemm<span style="color:#f92672">&lt;&lt;&lt;</span><span style="color:#ae81ff">1</span>,N<span style="color:#f92672">*</span>N<span style="color:#f92672">&gt;&gt;&gt;</span>(dA,dB,dC,N);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   cudaDeviceSynchronize();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   cudaError_t err <span style="color:#f92672">=</span> cudaGetLastError();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (err <span style="color:#f92672">!=</span> cudaSuccess) {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;Kernel Launch Failed: </span><span style="color:#e6db74">%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, cudaGetErrorString(err));
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>   printf(<span style="color:#e6db74">&#34;GEMM Completed Successfully</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   cudaMemcpy(C,dC, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyDeviceToHost);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">for</span> (int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        printf(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%u</span><span style="color:#e6db74">    &#34;</span>,C[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j]);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>     printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>   }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   cudaFree(dA);
+</span></span><span style="display:flex;"><span>   cudaFree(dB);
+</span></span><span style="display:flex;"><span>   cudaFree(dC);
+</span></span><span style="display:flex;"><span>   
+</span></span><span style="display:flex;"><span>   free(A);
+</span></span><span style="display:flex;"><span>   free(B);
+</span></span><span style="display:flex;"><span>   free(C);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><pre><code>GEMM Started
+GEMM Completed Successfully
+1120    1148    1176    1204    1232    1260    1288    1316    
+2912    3004    3096    3188    3280    3372    3464    3556    
+4704    4860    5016    5172    5328    5484    5640    5796    
+6496    6716    6936    7156    7376    7596    7816    8036    
+8288    8572    8856    9140    9424    9708    9992    10276    
+10080    10428    10776    11124    11472    11820    12168    12516    
+11872    12284    12696    13108    13520    13932    14344    14756    
+13664    14140    14616    15092    15568    16044    16520    16996    
+</code></pre>
+<h1 id="matrix-multiplications-using-using-2d-grid--2d-block">Matrix Multiplications using using 2D Grid &amp; 2D Block<a hidden class="anchor" aria-hidden="true" href="#matrix-multiplications-using-using-2d-grid--2d-block">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%%</span>cuda
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;stdio.h&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define N 8</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ void gemm(int<span style="color:#f92672">*</span> dA, int<span style="color:#f92672">*</span> dB, int<span style="color:#f92672">*</span> dC, int matDim){
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    int row <span style="color:#f92672">=</span> blockIdx<span style="color:#f92672">.</span>y<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>y <span style="color:#f92672">+</span> threadIdx<span style="color:#f92672">.</span>y;
+</span></span><span style="display:flex;"><span>    int col <span style="color:#f92672">=</span> blockIdx<span style="color:#f92672">.</span>x<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>x <span style="color:#f92672">+</span> threadIdx<span style="color:#f92672">.</span>x;
+</span></span><span style="display:flex;"><span>    int sum <span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(row<span style="color:#f92672">&lt;</span>N <span style="color:#f92672">&amp;&amp;</span> col<span style="color:#f92672">&lt;</span>N)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (int k<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;k<span style="color:#f92672">&lt;</span>N;k<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>            sum <span style="color:#f92672">=</span> sum <span style="color:#f92672">+</span> dA[row<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>k] <span style="color:#f92672">*</span> dB[k<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>col]; 
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        }  
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>         dC[row<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>col] <span style="color:#f92672">=</span> sum;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__host__ int main(){
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    int <span style="color:#f92672">*</span>A, <span style="color:#f92672">*</span>B, <span style="color:#f92672">*</span>C;
+</span></span><span style="display:flex;"><span>    int <span style="color:#f92672">*</span>dA, <span style="color:#f92672">*</span>dB, <span style="color:#f92672">*</span>dC;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    A <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    B <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    C <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dA, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dB, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dC, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int)); 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">for</span> (int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span> )
+</span></span><span style="display:flex;"><span>     {
+</span></span><span style="display:flex;"><span>        A[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j;
+</span></span><span style="display:flex;"><span>        B[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j; 
+</span></span><span style="display:flex;"><span>          
+</span></span><span style="display:flex;"><span>      }  
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaMemcpy(dA, A, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>    cudaMemcpy(dB, B, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    int block_size<span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>    dim3 blockDim(block_size,block_size);
+</span></span><span style="display:flex;"><span>    dim3 gridDim((N<span style="color:#f92672">+</span>block_size<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">/</span>block_size, (N<span style="color:#f92672">+</span>block_size<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">/</span>block_size);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    gemm<span style="color:#f92672">&lt;&lt;&lt;</span>gridDim,blockDim<span style="color:#f92672">&gt;&gt;&gt;</span>(dA,dB,dC,N);
+</span></span><span style="display:flex;"><span>    cudaDeviceSynchronize();
+</span></span><span style="display:flex;"><span>    cudaMemcpy(C,dC,N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyDeviceToHost);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span>(int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">for</span>(int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>      {
+</span></span><span style="display:flex;"><span>         printf(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%u</span><span style="color:#e6db74"> &#34;</span>, C[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j]);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>       printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaFree(dA);
+</span></span><span style="display:flex;"><span>    cudaFree(dB);
+</span></span><span style="display:flex;"><span>    cudaFree(dC);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    free(A);
+</span></span><span style="display:flex;"><span>    free(B);
+</span></span><span style="display:flex;"><span>    free(C);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><pre><code>1120 1148 1176 1204 1232 1260 1288 1316 
+2912 3004 3096 3188 3280 3372 3464 3556 
+4704 4860 5016 5172 5328 5484 5640 5796 
+6496 6716 6936 7156 7376 7596 7816 8036 
+8288 8572 8856 9140 9424 9708 9992 10276 
+10080 10428 10776 11124 11472 11820 12168 12516 
+11872 12284 12696 13108 13520 13932 14344 14756 
+13664 14140 14616 15092 15568 16044 16520 16996 
+</code></pre>
+<h1 id="matrix-multiplications-using-using-1d-grid--3d-block">Matrix Multiplications using using 1D Grid &amp; 3D Block<a hidden class="anchor" aria-hidden="true" href="#matrix-multiplications-using-using-1d-grid--3d-block">#</a></h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">%%</span>cuda
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;stdio.h&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define N 8</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#define BLOCK_SIZE 4</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__global__ void gemm(int<span style="color:#f92672">*</span> dA, int<span style="color:#f92672">*</span> dB, int<span style="color:#f92672">*</span> dC, int matDim){
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    int localThreadId <span style="color:#f92672">=</span>  threadIdx<span style="color:#f92672">.</span>z<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>y<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>x <span style="color:#f92672">+</span> threadIdx<span style="color:#f92672">.</span>y<span style="color:#f92672">*</span>blockDim<span style="color:#f92672">.</span>x<span style="color:#f92672">+</span>threadIdx<span style="color:#f92672">.</span>x;
+</span></span><span style="display:flex;"><span>    int globalThreadId <span style="color:#f92672">=</span> (blockIdx<span style="color:#f92672">.</span>x <span style="color:#f92672">*</span> blockDim<span style="color:#f92672">.</span>x<span style="color:#f92672">*</span> blockDim<span style="color:#f92672">.</span>y <span style="color:#f92672">*</span> blockDim<span style="color:#f92672">.</span>z) <span style="color:#f92672">+</span> localThreadId; 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    int row  <span style="color:#f92672">=</span> globalThreadId<span style="color:#f92672">/</span>matDim;
+</span></span><span style="display:flex;"><span>    int col  <span style="color:#f92672">=</span> globalThreadId<span style="color:#f92672">%</span>matDim;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    int sum <span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(row<span style="color:#f92672">&lt;</span>N <span style="color:#f92672">&amp;&amp;</span> col<span style="color:#f92672">&lt;</span>N)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (int k<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;k<span style="color:#f92672">&lt;</span>N;k<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>            sum <span style="color:#f92672">=</span> sum <span style="color:#f92672">+</span> dA[row<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>k] <span style="color:#f92672">*</span> dB[k<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>col]; 
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        }  
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>         dC[row<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>col] <span style="color:#f92672">=</span> sum;
+</span></span><span style="display:flex;"><span>    } 
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>__host__ int main(){
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    int <span style="color:#f92672">*</span>A, <span style="color:#f92672">*</span>B, <span style="color:#f92672">*</span>C;
+</span></span><span style="display:flex;"><span>    int <span style="color:#f92672">*</span>dA, <span style="color:#f92672">*</span>dB, <span style="color:#f92672">*</span>dC;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    A <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    B <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    C <span style="color:#f92672">=</span> (int<span style="color:#f92672">*</span>) malloc(N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dA, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dB, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int));
+</span></span><span style="display:flex;"><span>    cudaMalloc( (void<span style="color:#f92672">**</span>)<span style="color:#f92672">&amp;</span>dC, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int)); 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>   {
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">for</span> (int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span> )
+</span></span><span style="display:flex;"><span>     {
+</span></span><span style="display:flex;"><span>        A[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j;
+</span></span><span style="display:flex;"><span>        B[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j] <span style="color:#f92672">=</span> i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j; 
+</span></span><span style="display:flex;"><span>          
+</span></span><span style="display:flex;"><span>      }  
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaMemcpy(dA, A, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>    cudaMemcpy(dB, B, N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyHostToDevice);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    dim3 blockDim(BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
+</span></span><span style="display:flex;"><span>    dim3 gridDim((N<span style="color:#f92672">+</span>BLOCK_SIZE<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">/</span>BLOCK_SIZE);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    gemm<span style="color:#f92672">&lt;&lt;&lt;</span>gridDim,blockDim<span style="color:#f92672">&gt;&gt;&gt;</span>(dA,dB,dC,N);
+</span></span><span style="display:flex;"><span>    cudaDeviceSynchronize();
+</span></span><span style="display:flex;"><span>    cudaMemcpy(C,dC,N<span style="color:#f92672">*</span>N<span style="color:#f92672">*</span>sizeof(int), cudaMemcpyDeviceToHost);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span>(int i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>N; i<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">for</span>(int j<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; j<span style="color:#f92672">&lt;</span>N; j<span style="color:#f92672">++</span>)
+</span></span><span style="display:flex;"><span>      {
+</span></span><span style="display:flex;"><span>         printf(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">%u</span><span style="color:#e6db74"> &#34;</span>, C[i<span style="color:#f92672">*</span>N<span style="color:#f92672">+</span>j]);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>       printf(<span style="color:#e6db74">&#34;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cudaFree(dA);
+</span></span><span style="display:flex;"><span>    cudaFree(dB);
+</span></span><span style="display:flex;"><span>    cudaFree(dC);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    free(A);
+</span></span><span style="display:flex;"><span>    free(B);
+</span></span><span style="display:flex;"><span>    free(C);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><pre><code>1120 1148 1176 1204 1232 1260 1288 1316 
+2912 3004 3096 3188 3280 3372 3464 3556 
+4704 4860 5016 5172 5328 5484 5640 5796 
+6496 6716 6936 7156 7376 7596 7816 8036 
+8288 8572 8856 9140 9424 9708 9992 10276 
+10080 10428 10776 11124 11472 11820 12168 12516 
+11872 12284 12696 13108 13520 13932 14344 14756 
+13664 14140 14616 15092 15568 16044 16520 16996 
+</code></pre>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"></code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/"></a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

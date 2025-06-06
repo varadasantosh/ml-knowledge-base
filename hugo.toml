@@ -1,13 +1,33 @@
 baseURL = 'https://vvnasantosh.net/'
 languageCode = 'en-us'
-title = 'My ML Portfolio'
+
 theme = "hugo-PaperMod"
 
 [params]
+
+    colorScheme = "ocean"
+    defaultAppearance = "light" # valid options: light or dark
+    autoSwitchAppearance = false
+    defaultThemeColor = "#007ff"
     ShowBreadCrumbs = true
     ShowToc = true
     math = true
     author= "Varada V N A Santosh"
-    description ="ML Engineer"
+    description ="ML/AI Engineer"
     homeInfoParams = { Title = "Welcome to My Portfolio", Content = "Explore my ML projects, Jupyter notebooks, and AI concepts." }
 
+ [params.profileMode]
+
+    enabled = true
+    title = "Varada V N A Santosh"
+    subtitle = "ML/AI Engineer"
+
+    imageWidth = 120
+    imageHeight = 120
+    [[params.profileMode.buttons]]
+        name = "About"
+        url = "/about/"    
+     [[params.profileMode.buttons]] 
+      name = "Blog"
+      url = "/posts/"
+    

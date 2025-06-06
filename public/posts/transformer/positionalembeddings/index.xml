@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Positional Embeddings on </title>
+    <link>http://localhost:1313/posts/transformer/positionalembeddings/</link>
+    <description>Recent content in Positional Embeddings on </description>
+    <generator>Hugo -- 0.147.7</generator>
+    <language>en-us</language>
+    <atom:link href="http://localhost:1313/posts/transformer/positionalembeddings/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title></title>
+      <link>http://localhost:1313/posts/transformer/positionalembeddings/rope/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/transformer/positionalembeddings/rope/</guid>
+      <description>&lt;h1 id=&#34;rotatory-positional-embeddings&#34;&gt;Rotatory-Positional-Embeddings&lt;/h1&gt;
+&lt;p&gt;Original Paper:- &lt;a href=&#34;https://arxiv.org/abs/2104.09864&#34;&gt;https://arxiv.org/abs/2104.09864&lt;/a&gt;
+&lt;a href=&#34;https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/&#34;&gt;https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/&lt;/a&gt;
+&lt;a href=&#34;https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794&#34;&gt;https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794&lt;/a&gt;
+&lt;a href=&#34;https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed&#34;&gt;https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;When we were discussing about Positional Embeddings mentioned in foundational paper &amp;ldquo;Attention is All You Need&amp;rdquo; , we got to know the
+importance of positional encodings , also we got to know the two different approaches &lt;code&gt;Learned&lt;/code&gt; &amp;amp; &lt;code&gt;Fixed&lt;/code&gt; though the paper preferred
+fixed positional embeddings over learned embeddings, the later results and metrics showed that fixed positional embeddings could not
+accurately process the relation ship between different words or tokens , especially when the sequence whose length is more than sequence
+encoutered during training.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Rotary Positional Embeddings</title>
+      <link>http://localhost:1313/posts/transformer/positionalembeddings/rope-2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/transformer/positionalembeddings/rope-2/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

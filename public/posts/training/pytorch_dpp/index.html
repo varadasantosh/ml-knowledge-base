@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Pytorch DDP Setup -Multi Node | </title>
+<meta name="keywords" content="">
+<meta name="description" content="Pytorch DDP Setup -Multi Node - ">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:1313/posts/training/pytorch_dpp/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.8fe10233a706bc87f2e08b3cf97b8bd4c0a80f10675a143675d59212121037c0.css" integrity="sha256-j&#43;ECM6cGvIfy4Is8&#43;XuL1MCoDxBnWhQ2ddWSEhIQN8A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/training/pytorch_dpp/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/training/">Training Large Languge Models</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Pytorch DDP Setup -Multi Node
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#1--ec2-infrastructure-setup" aria-label="1️⃣  EC2 Infrastructure Setup">1️⃣  EC2 Infrastructure Setup</a></li>
+                <li>
+                    <a href="#2--nvidia-driver-installation" aria-label="2️⃣  NVIDIA Driver Installation">2️⃣  NVIDIA Driver Installation</a></li>
+                <li>
+                    <a href="#3--validate-network-communication-between-nodes" aria-label="3️⃣  Validate Network Communication Between Nodes">3️⃣  Validate Network Communication Between Nodes</a></li>
+                <li>
+                    <a href="#4-transfer-training-script-to-instance" aria-label="4️⃣ Transfer Training Script to Instance">4️⃣ Transfer Training Script to Instance</a></li>
+                <li>
+                    <a href="#5-training-script" aria-label="5️⃣ Training Script">5️⃣ Training Script</a></li>
+                <li>
+                    <a href="#6-python-dependencies-requirementstxt" aria-label="6️⃣ Python Dependencies (requirements.txt)">6️⃣ Python Dependencies (requirements.txt)</a></li>
+                <li>
+                    <a href="#7--environment-setup" aria-label="7️⃣  Environment Setup">7️⃣  Environment Setup</a></li>
+                <li>
+                    <a href="#8--running-ddp-with-torchrun" aria-label="8️⃣  Running DDP with torchrun">8️⃣  Running DDP with torchrun</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h2 id="1--ec2-infrastructure-setup">1️⃣  EC2 Infrastructure Setup<a hidden class="anchor" aria-hidden="true" href="#1--ec2-infrastructure-setup">#</a></h2>
+<p>Launch Two EC2 Instances</p>
+<ul>
+<li><strong>Instance Type</strong>: <code>g4dn.xlarge</code></li>
+<li><strong>AMI</strong>: Ubuntu 22.04 (x86_64)</li>
+</ul>
+<p><strong>Note</strong> Intially tried with Amazon Linux – there were compatibility issues with NVIDIA libraries.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Hostname</th>
+          <th>Private DNS</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>pytorch-ddp-1</td>
+          <td><code>ip-172-31-8-59.us-west-2.compute.internal</code></td>
+      </tr>
+      <tr>
+          <td>pytorch-ddp-2</td>
+          <td><code>ip-172-31-9-180.us-west-2.compute.internal</code></td>
+      </tr>
+  </tbody>
+</table>
+<ul>
+<li>✅ Assigned same SSH keypair for both EC2 Instances</li>
+<li>✅ Assigned the same VPC &amp; Subnet (This is required for both MASTER &amp; WORKER to communicate)</li>
+<li>✅ Assigned default Security Group</li>
+<li>✅ Update Seucrity Group Inbound Rules to allow TCP traffic on PORT <strong>22</strong> (Required for connecting to instances via SSH)</li>
+<li>✅ Add new Inbound Rule to Security Group to allow port range <strong>0-65535</strong> referring to the same Security Groups as Source
+(Security Group assigned to EC2 Instance)</li>
+</ul>
+<h2 id="2--nvidia-driver-installation">2️⃣  NVIDIA Driver Installation<a hidden class="anchor" aria-hidden="true" href="#2--nvidia-driver-installation">#</a></h2>
+<ul>
+<li>sudo apt update</li>
+<li>sudo apt install -y nvidia-driver-535</li>
+</ul>
+<h2 id="3--validate-network-communication-between-nodes">3️⃣  Validate Network Communication Between Nodes<a hidden class="anchor" aria-hidden="true" href="#3--validate-network-communication-between-nodes">#</a></h2>
+<ul>
+<li>Master -&gt; Worker</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>ssh -i <span style="color:#e6db74">&#34;pytorch-dpp.pem&#34;</span> ubuntu@ec2-35-88-110-204.us-west-2.compute.amazonaws.com
+</span></span><span style="display:flex;"><span>nc -zv 172.31.9.180 <span style="color:#ae81ff">22</span>
+</span></span></code></pre></div><p><img alt="master to worker" loading="lazy" src="/images/training/DDP/master_worker.png"></p>
+<ul>
+<li>Worker -&gt; Master</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>ssh -i pytorch-dpp.pem ubuntu@ec2-34-221-186-92.us-west-2.compute.amazonaws.com
+</span></span><span style="display:flex;"><span>nc -zv 172.31.8.59 <span style="color:#ae81ff">22</span>
+</span></span></code></pre></div><p><img alt="worker to master" loading="lazy" src="/images/training/DDP/worker_master.png"></p>
+<h2 id="4-transfer-training-script-to-instance">4️⃣ Transfer Training Script to Instance<a hidden class="anchor" aria-hidden="true" href="#4-transfer-training-script-to-instance">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span> scp -i pytorch-dpp.pem lr_multigpu.py ubuntu@ec2-35-88-110-204.us-west-2.compute.amazonaws.com:/home/ubuntu
+</span></span><span style="display:flex;"><span> scp -i pytorch-dpp.pem utils/dataset.py ubuntu@ec2-35-88-110-204.us-west-2.compute.amazonaws.com:/home/ubuntu/utils
+</span></span><span style="display:flex;"><span> scp -i pytorch-dpp.pem requirements.txt ubuntu@ec2-35-88-110-204.us-west-2.compute.amazonaws.com:/home/ubuntu
+</span></span></code></pre></div><h2 id="5-training-script">5️⃣ Training Script<a hidden class="anchor" aria-hidden="true" href="#5-training-script">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># lr_multigpu.py</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.nn <span style="color:#66d9ef">as</span> nn
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.distributed <span style="color:#66d9ef">as</span> dist
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> torch.multiprocessing <span style="color:#66d9ef">as</span> mp
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> datetime
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span>  DataLoader,DistributedSampler
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.nn.parallel <span style="color:#f92672">import</span> DistributedDataParallel <span style="color:#66d9ef">as</span> DDP
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.distributed <span style="color:#f92672">import</span> init_process_group,destroy_process_group
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> sklearn.datasets <span style="color:#f92672">import</span> make_regression
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> utils.dataset <span style="color:#f92672">import</span> MyDataset
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">torchMultiLR</span>():
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self, model, loss_fn, optimizer, gpu_rank, epoch,features, target):
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Initialize Training Model , Loss Function, Optimizer etc on GPU Rank: </span><span style="color:#e6db74">{</span>gpu_rank<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>to(gpu_rank)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model <span style="color:#f92672">=</span> DDP(self<span style="color:#f92672">.</span>model, device_ids<span style="color:#f92672">=</span>[gpu_rank])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>loss_fn <span style="color:#f92672">=</span> loss_fn
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>optimizer <span style="color:#f92672">=</span> optimizer
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>gpu_rank <span style="color:#f92672">=</span> gpu_rank
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>epoch <span style="color:#f92672">=</span> epoch
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>features <span style="color:#f92672">=</span> features
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>target <span style="color:#f92672">=</span> target
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Completed Initializing Training Model , Loss Function, Optimizer etc&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">fit</span>(self, dataloader:DataLoader):
+</span></span><span style="display:flex;"><span>         <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(self<span style="color:#f92672">.</span>epoch):
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> batch_idx, (features, target, indices) <span style="color:#f92672">in</span> enumerate(dataloader):
+</span></span><span style="display:flex;"><span>                local_rank <span style="color:#f92672">=</span>  int(os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;LOCAL_RANK&#34;</span>, <span style="color:#ae81ff">0</span>))
+</span></span><span style="display:flex;"><span>                print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;training on epoch:-</span><span style="color:#e6db74">{</span>epoch<span style="color:#e6db74">}</span><span style="color:#e6db74"> , rank :-</span><span style="color:#e6db74">{</span>local_rank<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>                print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34; Epoch:- </span><span style="color:#e6db74">{</span>epoch<span style="color:#e6db74">}</span><span style="color:#e6db74"> [Rank </span><span style="color:#e6db74">{</span>dist<span style="color:#f92672">.</span>get_rank()<span style="color:#e6db74">}</span><span style="color:#e6db74">] Batch </span><span style="color:#e6db74">{</span>batch_idx<span style="color:#e6db74">}</span><span style="color:#e6db74"> - Sample indices: </span><span style="color:#e6db74">{</span>indices<span style="color:#f92672">.</span>tolist()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>                features <span style="color:#f92672">=</span>features<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>gpu_rank)
+</span></span><span style="display:flex;"><span>                target <span style="color:#f92672">=</span> target<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>gpu_rank)
+</span></span><span style="display:flex;"><span>                y_pred <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model(features)
+</span></span><span style="display:flex;"><span>                loss <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>loss_fn(y_pred,target)
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>optimizer<span style="color:#f92672">.</span>zero_grad()
+</span></span><span style="display:flex;"><span>                loss<span style="color:#f92672">.</span>backward()
+</span></span><span style="display:flex;"><span>                self<span style="color:#f92672">.</span>optimizer<span style="color:#f92672">.</span>step()
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Current Iteration:-</span><span style="color:#e6db74">{</span>epoch<span style="color:#e6db74">}</span><span style="color:#e6db74">, on Running on Rank:-</span><span style="color:#e6db74">{</span>self<span style="color:#f92672">.</span>gpu_rank<span style="color:#e6db74">}</span><span style="color:#e6db74">, loss is %.2f&#34;</span>, loss)
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>_savechckpt(<span style="color:#e6db74">&#34;gpucheckpt.pt&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_savechckpt</span>(self, path):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> self<span style="color:#f92672">.</span>gpu_rank<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>:
+</span></span><span style="display:flex;"><span>            snapshot<span style="color:#f92672">=</span>{}
+</span></span><span style="display:flex;"><span>            snapshot[<span style="color:#e6db74">&#39;model_params&#39;</span>] <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model<span style="color:#f92672">.</span>module<span style="color:#f92672">.</span>state_dict()
+</span></span><span style="display:flex;"><span>            snapshot[<span style="color:#e6db74">&#39;features&#39;</span>] <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>features<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>gpu_rank)
+</span></span><span style="display:flex;"><span>            snapshot[<span style="color:#e6db74">&#39;target&#39;</span>] <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>target<span style="color:#f92672">.</span>to(self<span style="color:#f92672">.</span>gpu_rank)
+</span></span><span style="display:flex;"><span>            snapshot[<span style="color:#e6db74">&#39;model&#39;</span>] <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model<span style="color:#f92672">.</span>module
+</span></span><span style="display:flex;"><span>            torch<span style="color:#f92672">.</span>save(snapshot,path)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">setup_ddp</span>(rank, world_size):
+</span></span><span style="display:flex;"><span>   
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;Before Initializing Process Group&#34;</span>)
+</span></span><span style="display:flex;"><span>    torch<span style="color:#f92672">.</span>cuda<span style="color:#f92672">.</span>set_device(rank)
+</span></span><span style="display:flex;"><span>    init_process_group(backend<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;nccl&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># init_process_group(backend=&#34;nccl&#34;,rank=rank, world_size=world_size,timeout=datetime.timedelta(seconds=120))</span>
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;After Initializing Process Group&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>(rank:int, epoch:int ,batch_size:int):
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        local_rank <span style="color:#f92672">=</span>  int(os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;LOCAL_RANK&#34;</span>, <span style="color:#ae81ff">0</span>))
+</span></span><span style="display:flex;"><span>        world_size <span style="color:#f92672">=</span> int(os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;WORLD_SIZE&#34;</span>, <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        setup_ddp(local_rank,world_size)
+</span></span><span style="display:flex;"><span>        data <span style="color:#f92672">=</span> make_regression(n_samples<span style="color:#f92672">=</span><span style="color:#ae81ff">100000</span>, n_features<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, n_targets<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, random_state<span style="color:#f92672">=</span><span style="color:#ae81ff">42</span>)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Data Preparation&#34;</span>)
+</span></span><span style="display:flex;"><span>        features <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor(data[<span style="color:#ae81ff">0</span>], dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>float32)<span style="color:#f92672">.</span>to(local_rank)
+</span></span><span style="display:flex;"><span>        target <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>tensor(data[<span style="color:#ae81ff">1</span>], dtype<span style="color:#f92672">=</span>torch<span style="color:#f92672">.</span>float32)<span style="color:#f92672">.</span>to(local_rank)
+</span></span><span style="display:flex;"><span>        target <span style="color:#f92672">=</span> target<span style="color:#f92672">.</span>view(target<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>],<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        custom_dataset <span style="color:#f92672">=</span> MyDataset(features,target)
+</span></span><span style="display:flex;"><span>        custom_dataloader <span style="color:#f92672">=</span> DataLoader(dataset<span style="color:#f92672">=</span> custom_dataset,
+</span></span><span style="display:flex;"><span>                                       batch_size<span style="color:#f92672">=</span> batch_size,
+</span></span><span style="display:flex;"><span>                                       shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>,
+</span></span><span style="display:flex;"><span>                                       sampler<span style="color:#f92672">=</span> DistributedSampler(custom_dataset)
+</span></span><span style="display:flex;"><span>                                        )
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Model Initialized&#34;</span>)                                
+</span></span><span style="display:flex;"><span>        model <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>Sequential(nn<span style="color:#f92672">.</span>Linear(features<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>],<span style="color:#ae81ff">5</span>),
+</span></span><span style="display:flex;"><span>                                    nn<span style="color:#f92672">.</span>Linear(<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">1</span>))<span style="color:#f92672">.</span>to(local_rank)
+</span></span><span style="display:flex;"><span>                                  
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Loss Function &amp; Optimizer Definition&#34;</span>)
+</span></span><span style="display:flex;"><span>        loss_fn <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>MSELoss()
+</span></span><span style="display:flex;"><span>        optimizer <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(model<span style="color:#f92672">.</span>parameters(), lr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.01</span>)                                    
+</span></span><span style="display:flex;"><span>        torch_lr <span style="color:#f92672">=</span> torchMultiLR(model<span style="color:#f92672">=</span>model,loss_fn<span style="color:#f92672">=</span>loss_fn,optimizer<span style="color:#f92672">=</span>optimizer,gpu_rank<span style="color:#f92672">=</span>local_rank,epoch<span style="color:#f92672">=</span>epoch, features<span style="color:#f92672">=</span>features,target<span style="color:#f92672">=</span>target)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Starting trainign process&#34;</span>)
+</span></span><span style="display:flex;"><span>        torch_lr<span style="color:#f92672">.</span>fit(custom_dataloader)
+</span></span><span style="display:flex;"><span>        destroy_process_group()
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Global Rank:- </span><span style="color:#e6db74">{</span>os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;RANK&#34;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Node Rank:-, </span><span style="color:#e6db74">{</span>os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;LOCAL_RANK&#34;</span>),<span style="color:#ae81ff">0</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;World Size:- </span><span style="color:#e6db74">{</span>os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;WORLD_SIZE&#34;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    global_rank <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>environ<span style="color:#f92672">.</span>get(<span style="color:#e6db74">&#34;RANK&#34;</span>)
+</span></span><span style="display:flex;"><span>    epoch <span style="color:#f92672">=</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>    batch_size <span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>
+</span></span><span style="display:flex;"><span>    main(int(global_rank),epoch,batch_size)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># utils/dataset.py</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> Dataset
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MyDataset</span>(Dataset):
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self, features, target):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>features <span style="color:#f92672">=</span> features
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>target  <span style="color:#f92672">=</span> target
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__len__</span>(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>features<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__getitem__</span>(self,index):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (self<span style="color:#f92672">.</span>features[index], self<span style="color:#f92672">.</span>target[index],index)
+</span></span></code></pre></div><h2 id="6-python-dependencies-requirementstxt">6️⃣  Python Dependencies (<code>requirements.txt</code>)<a hidden class="anchor" aria-hidden="true" href="#6-python-dependencies-requirementstxt">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>torch==2.6.0
+</span></span><span style="display:flex;"><span>scikit-learn==1.6.1
+</span></span></code></pre></div><h2 id="7--environment-setup">7️⃣  Environment Setup<a hidden class="anchor" aria-hidden="true" href="#7--environment-setup">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span> sudo apt install python3.12-venv
+</span></span><span style="display:flex;"><span> python3 -vnenv ddp
+</span></span><span style="display:flex;"><span> source ddp/bin/activate
+</span></span><span style="display:flex;"><span> pip install -r requirements.txt
+</span></span><span style="display:flex;"><span> export WORLD_SIZE<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>
+</span></span></code></pre></div><h2 id="8--running-ddp-with-torchrun">8️⃣  Running DDP with torchrun<a hidden class="anchor" aria-hidden="true" href="#8--running-ddp-with-torchrun">#</a></h2>
+<p>▶️ On Master Node (Rank 0)</p>
+<pre><code>torchrun --nproc_per_node=1 \
+        --nnodes=2 \
+        --node-rank=0 \
+        --rdzv_backend=c10d \
+        --rdzv_endpoint=172.31.8.59:29500 lr_multigpu.py
+</code></pre>
+<p>▶️ On Worker Node (Rank 1)</p>
+<pre><code>torchrun \
+    --nproc_per_node=1 \
+    --nnodes=2 \
+    --node-rank=1 \
+    --rdzv_backend=c10d \
+    --rdzv_endpoint=172.31.8.59:29500 \
+    lr_multigpu.py  
+</code></pre>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/"></a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
