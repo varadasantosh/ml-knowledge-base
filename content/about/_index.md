@@ -3,7 +3,7 @@ title: "About Me"
 date: 2025-06-05
 ---
 
-Innovative AI/ML Engineer with over 16 years of diverse experience spanning security, data
+  Innovative AI/ML Engineer with over 16 years of diverse experience spanning security, data
 engineering, backend development, DevOps, and machine learning. Currently focused on designing and deploying
 production-grade AI systems that leverage deep learning, NLP, and LLMs to solve complex business challenges. Skilled in
 CUDA-based model acceleration, distributed training, and MLOps using tools like PyTorch, Docker, and Kubernetes.
@@ -149,10 +149,6 @@ My background spans multiple areas critical to LLM development, and with my curr
       <div class="timeline-desc">ML/AI , Product Standards</div>
     </div>
 
-    <div class="timeline-step">
-      <div class="timeline-role">ML/AI Engineer</div>
-      <div class="timeline-desc">ML/AI Adoption</div>
-    </div>
 
   </div>
 </div>
