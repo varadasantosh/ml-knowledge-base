@@ -19,11 +19,11 @@ Data Science Program to stay ahead in the rapidly evolving AI landscape.
 
 My background spans multiple areas critical to LLM development, and with my current LLM expertise, I can bring them together to build and optimize the full lifecycle.
 
-- **Data Engineering**: scalable pipelines, tokenization, dataset curation.
+- **Data Engineering**: Scalable pipelines, tokenization, dataset curation.
 - **Model Design**: Transformers, Attention Mechanisms, Positional Encoding.
-- **Pre-Training**: distributed training with mixed precision, DeepSpeed, FSDP.
-- **Fine-Tuning**: efficient adaptation with LoRA, QLoRA, quantization.
-- **Continual Learning**: refreshing models with new data and domain adaptation.
+- **Pre-Training**: Distributed training with mixed precision, DeepSpeed, FSDP.
+- **Fine-Tuning**: Efficient adaptation with LoRA, QLoRA, quantization.
+- **Continual Learning**: Retraining models with new data and domain adaptation.
 
 ---
 
