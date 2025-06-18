@@ -3,10 +3,16 @@ title: "About Me"
 date: 2025-06-05
 ---
 
-I am an engineer passionate about building scalable AI systems, with a focus on Machine Learning, Deep Learning, and distributed architectures.
-
-This site reflects my journey of exploring core concepts and optimization techniques that drive modern AI systems at scale.
-
+Innovative AI/ML Engineer with over 16 years of diverse experience spanning security, data
+engineering, backend development, DevOps, and machine learning. Currently focused on designing and deploying
+production-grade AI systems that leverage deep learning, NLP, and LLMs to solve complex business challenges. Skilled in
+CUDA-based model acceleration, distributed training, and MLOps using tools like PyTorch, Docker, and Kubernetes.
+Proven success in delivering high-performance, cloud-native solutions across GCP and SAP BTP. Career progression from
+SAP Security Consultant to backend and data systems engineer uniquely positions me to build and operationalize end-
+to-end machine learning (ML) pipelines. Actively advancing deep learning and generative AI expertise through Scaler’s
+Data Science Program, while leading strategic AI initiatives that impact Line-of-Business (LoB) product integration.
+Committed to continuous learning, currently expanding expertise in deep learning and generative AI through Scaler’s
+Data Science Program to stay ahead in the rapidly evolving AI landscape.
 ---
 
 ## Full-Stack LLM Systems | From Data to Deployment
@@ -119,23 +125,28 @@ My background spans multiple areas critical to LLM development, and with my curr
     </div>
 
     <div class="timeline-step">
-      <div class="timeline-role">SAP BI Developer</div>
+      <div class="timeline-role">SAP BI Consultant</div>
       <div class="timeline-desc">BI & Analytics</div>
     </div>
 
     <div class="timeline-step">
-      <div class="timeline-role">SAP HANA Consultant</div>
-      <div class="timeline-desc">HANA Data Modeling</div>
+      <div class="timeline-role">SAP HANA & Analytics Lead</div>
+      <div class="timeline-desc">Analytics Data Modeling, Predictive Analytics</div>
     </div>
 
     <div class="timeline-step">
       <div class="timeline-role">Backend Developer</div>
-      <div class="timeline-desc">Backend APIs (Java, Node.js)</div>
+      <div class="timeline-desc">Backend APIs (NodeJs, Java, Kafka)</div>
     </div>
 
     <div class="timeline-step">
       <div class="timeline-role">DevOps Engineer</div>
       <div class="timeline-desc">Infrastructure Automation</div>
+    </div>
+
+     <div class="timeline-step">
+      <div class="timeline-role">Individual Contributor</div>
+      <div class="timeline-desc">ML/AI , Product Standards</div>
     </div>
 
     <div class="timeline-step">
