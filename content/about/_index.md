@@ -3,16 +3,7 @@ title: "About Me"
 date: 2025-06-05
 ---
 
-  Innovative AI/ML Engineer with over 16 years of diverse experience spanning security, data
-engineering, backend development, DevOps, and machine learning. Currently focused on designing and deploying
-production-grade AI systems that leverage deep learning, NLP, and LLMs to solve complex business challenges. Skilled in
-CUDA-based model acceleration, distributed training, and MLOps using tools like PyTorch, Docker, and Kubernetes.
-Proven success in delivering high-performance, cloud-native solutions across GCP and SAP BTP. Career progression from
-SAP Security Consultant to backend and data systems engineer uniquely positions me to build and operationalize end-
-to-end machine learning (ML) pipelines. Actively advancing deep learning and generative AI expertise through Scaler’s
-Data Science Program, while leading strategic AI initiatives that impact Line-of-Business (LoB) product integration.
-Committed to continuous learning, currently expanding expertise in deep learning and generative AI through Scaler’s
-Data Science Program to stay ahead in the rapidly evolving AI landscape.
+  AI/ML Engineer with 16+ years of cross-functional experience in security, backend development, data engineering, and DevOps. I specialize in building and deploying production-grade AI solutions using deep learning, NLP, and LLMs. With hands-on expertise in CUDA optimization, distributed training, and MLOps using PyTorch, Docker, and Kubernetes, I deliver high-performance, cloud-native systems across GCP , AWS, Azure. My career journey from SAP Security Consultant to full-stack ML practitioner enables me to architect robust end-to-end ML pipelines. I'm currently deepening my generative AI capabilities through Scaler’s Data Science Program while driving strategic AI initiatives that integrate seamlessly into business workflows.
 ---
 
 ## Full-Stack LLM Systems | From Data to Deployment
