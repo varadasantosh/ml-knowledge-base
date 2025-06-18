@@ -16,6 +16,7 @@ I deliver high-performance, cloud-native solutions across platforms like GCP, AW
 My career began as an SAP Security Consultant and has evolved into a full-stack ML practitioner role. This journey uniquely equips me to design and operationalize end-to-end machine learning pipelines.
 
 I'm also expanding my expertise in Deep Learning & ML through Scaler’s Data Science Program, while leading strategic AI initiatives that align closely with enterprise needs.
+
 ---
 
 ## Full-Stack LLM Systems | From Data to Deployment
