@@ -326,3 +326,13 @@ While each of the approaches have various advantages and disadvantages
 
   ```
   ![accessing-pytorch-from-local](/images/cuda/dev-setup/accessing-pytorch-from-local.png)
+
+
+# Resources:-
+
+- [AWS Deep Learning AMI](https://docs.aws.amazon.com/dlami/latest/devguide/tutorial-pytorch.html)
+- [AWS Deep Learning Containers](https://docs.aws.amazon.com/deep-learning-containers/latest/devguide/deep-learning-containers-ec2-tutorials-training.html#deep-learning-containers-ec2-tutorials-training-pytorch)
+- [Google Deep Learning Containers](https://cloud.google.com/deep-learning-containers/docs)
+- [Google+Pytoch_VM](https://cloud.google.com/deep-learning-vm/docs/pytorch_start_instance)
+- [Docker-Installation](https://docs.docker.com/engine/install/ubuntu/)
+- [Docker-pytorch](https://hub.docker.com/r/pytorch/pytorch/)
