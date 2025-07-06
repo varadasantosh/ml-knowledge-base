@@ -3,6 +3,8 @@
 title: "CUDA Setup on AWS"
 ---
 
+<!--more-->
+
 This article provides a brief introduction on setting up a local development environment for deep learning model development and training using AWS. Given the high cost of GPUs, purchasing them for individual or organizational use may not be feasible. Even if an organization already owns GPUs, they might need to upgrade to newer architectures to benefit from features and performance improvements in the latest GPU generations. This makes hyperscalers such as AWS, Azure, and GCP attractive options for flexible, scalable GPU resources.
 
 In this article, we focus on different ways to set up a deep learning environment using AWS offerings.
