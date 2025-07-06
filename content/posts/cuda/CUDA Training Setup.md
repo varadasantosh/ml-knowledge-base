@@ -1,6 +1,6 @@
 
 ---
-title: "CUDA Setup on AWS"
+title: "CUDA Setup on AWS - Terraform"
 ---
 
 <!--more-->
