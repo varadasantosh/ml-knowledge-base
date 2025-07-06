@@ -14,6 +14,8 @@
   </url><url>
     <loc>http://localhost:1313/categories/</loc>
   </url><url>
+    <loc>http://localhost:1313/posts/cuda/cuda-infra-terminology/</loc>
+  </url><url>
     <loc>http://localhost:1313/posts/cuda/</loc>
   </url><url>
     <loc>http://localhost:1313/posts/cuda/cuda-kernel-workflow/</loc>
@@ -25,6 +27,8 @@
     <loc>http://localhost:1313/posts/transformer/attention/attention/</loc>
   </url><url>
     <loc>http://localhost:1313/posts/transformer/attention/flash_attention/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/computervision/</loc>
   </url><url>
     <loc>http://localhost:1313/posts/cuda/thread-indexing/</loc>
   </url><url>
@@ -47,5 +51,9 @@
     <loc>http://localhost:1313/posts/training/</loc>
   </url><url>
     <loc>http://localhost:1313/posts/transformer/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/computervision/vae_notes/</loc>
+  </url><url>
+    <loc>http://localhost:1313/posts/computervision/vae_implementation/</loc>
   </url>
 </urlset>

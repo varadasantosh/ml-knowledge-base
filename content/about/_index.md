@@ -7,9 +7,12 @@ I'm an AI/ML Engineer with 16+ years of experience across security, backend deve
 
 Currently, I focus on designing and deploying production-grade AI systems using deep learning, NLP, and large language models (LLMs). My technical strengths include:
 
-  - CUDA optimization
+  - Neural Networks (ANN,CNN,RNN)
+  - Transformer Architecture
   - Distributed training
   - MLOps using PyTorch, Docker, and Kubernetes
+  - Cloud Platforms GCP,AWS,Azure
+  - CUDA GEMM optimizations
 
 I deliver high-performance, cloud-native solutions across platforms like GCP, AWS, and Azure.
 

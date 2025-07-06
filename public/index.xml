@@ -27,11 +27,25 @@ accurately process the relation ship between different words or tokens , especia
 encoutered during training.&lt;/p&gt;</description>
     </item>
     <item>
+      <title>CUDA Compute Capability, Driver, and Toolkit Compatibility Guide</title>
+      <link>http://localhost:1313/posts/cuda/cuda-infra-terminology/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/cuda/cuda-infra-terminology/</guid>
+      <description></description>
+    </item>
+    <item>
       <title>CUDA Programming Flow</title>
       <link>http://localhost:1313/posts/cuda/cuda-kernel-workflow/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/cuda/cuda-kernel-workflow/</guid>
       <description></description>
+    </item>
+    <item>
+      <title>CUDA Setup on AWS</title>
+      <link>http://localhost:1313/posts/cuda/cuda-training-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/cuda/cuda-training-setup/</guid>
+      <description>&lt;p&gt;This article provides a brief introduction on setting up a local development environment for deep learning model development and training using AWS. Given the high cost of GPUs, purchasing them for individual or organizational use may not be feasible. Even if an organization already owns GPUs, they might need to upgrade to newer architectures to benefit from features and performance improvements in the latest GPU generations. This makes hyperscalers such as AWS, Azure, and GCP attractive options for flexible, scalable GPU resources.&lt;/p&gt;</description>
     </item>
     <item>
       <title>Dataset Preparation</title>
@@ -101,6 +115,20 @@ encoutered during training.&lt;/p&gt;</description>
       <link>http://localhost:1313/posts/cuda/tile_gemm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/cuda/tile_gemm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Variational AutoEncoder Concepts</title>
+      <link>http://localhost:1313/posts/computervision/vae_notes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/computervision/vae_notes/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Variational AutoEncoder Implementation</title>
+      <link>http://localhost:1313/posts/computervision/vae_implementation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/computervision/vae_implementation/</guid>
       <description></description>
     </item>
   </channel>
