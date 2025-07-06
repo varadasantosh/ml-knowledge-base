@@ -20,6 +20,8 @@
   </url><url>
     <loc>http://localhost:1313/posts/cuda/cuda-kernel-workflow/</loc>
   </url><url>
+    <loc>http://localhost:1313/posts/cuda/cuda-training-setup/</loc>
+  </url><url>
     <loc>http://localhost:1313/posts/transformer/prepare_dataset/</loc>
   </url><url>
     <loc>http://localhost:1313/posts/training/distributed-training/</loc>
