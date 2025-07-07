@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Variational AutoEncoder Concepts | </title>
+<meta name="keywords" content="">
+<meta name="description" content="Variational AutoEncoder Concepts - ">
+<meta name="author" content="Varada V N A Santosh">
+<link rel="canonical" href="http://localhost:1313/posts/computervision/vae_notes/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.8fe10233a706bc87f2e08b3cf97b8bd4c0a80f10675a143675d59212121037c0.css" integrity="sha256-j&#43;ECM6cGvIfy4Is8&#43;XuL1MCoDxBnWhQ2ddWSEhIQN8A=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/computervision/vae_notes/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                displayMath: [['$$','$$'], ['\\[','\\]']],
+                processEscapes: true,
+                processEnvironments: true // **THIS IS CRUCIAL FOR ALIGN/ALIGNED**
+            },
+            "HTML-CSS": {
+                linebreaks: { automatic: true }
+            },
+            SVG: {
+                linebreaks: { automatic: true }
+            },
+            TeX: {
+                Macros: {
+                    # Define any custom LaTeX commands here if needed
+                },
+                extensions: ["AMSmath.js", "AMSsymbols.js"] // **THESE ARE CRUCIAL**
+            }
+        });
+    </script>    
+
+>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false}
+        ]
+    });
+});
+</script>
+
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/computervision/">Generative &amp; Vision Models</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Variational AutoEncoder Concepts
+    </h1>
+    <div class="post-meta">Varada V N A Santosh
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#brief-intro---autoencoders" aria-label="Brief Intro - AutoEncoders">Brief Intro - AutoEncoders</a><ul>
+                        
+                <li>
+                    <a href="#autoencoder-process" aria-label="AutoEncoder Process">AutoEncoder Process</a></li>
+                <li>
+                    <a href="#issues-with-autoencoders" aria-label="Issues with AutoEncoders">Issues with AutoEncoders</a></li></ul>
+                </li>
+                <li>
+                    <a href="#terminology-required-for-vae" aria-label="Terminology Required for VAE">Terminology Required for VAE</a><ul>
+                        
+                <li>
+                    <a href="#bayesian-probability-concepts" aria-label="Bayesian Probability Concepts:">Bayesian Probability Concepts:</a><ul>
+                        
+                <li>
+                    <a href="#bayesian-probabilty-for-vae" aria-label="Bayesian Probabilty for VAE:">Bayesian Probabilty for VAE:</a></li></ul>
+                </li></ul>
+                </li>
+                <li>
+                    <a href="#evidence-lowerbound" aria-label="Evidence LowerBound">Evidence LowerBound</a><ul>
+                        
+                <li>
+                    <a href="#deriving-the-evidence-lower-bound-elbo" aria-label="Deriving the Evidence Lower Bound (ELBO)">Deriving the Evidence Lower Bound (ELBO)</a></li></ul>
+                </li>
+                <li>
+                    <a href="#reparameterization-trick" aria-label="Reparameterization Trick">Reparameterization Trick</a><ul>
+                        
+                <li>
+                    <a href="#necessity-for-reparameterization" aria-label="Necessity for Reparameterization:">Necessity for Reparameterization:</a></li></ul>
+                </li>
+                <li>
+                    <a href="#final-loss-function" aria-label="Final Loss Function">Final Loss Function</a></li>
+                <li>
+                    <a href="#few-important-points-on-vaes-choices-of-using-gaussian-distribution" aria-label="Few Important Points on VAE&rsquo;s choices of using Gaussian Distribution">Few Important Points on VAE&rsquo;s choices of using Gaussian Distribution</a><ul>
+                        
+                <li>
+                    <a href="#why-compare-the-latent-space-with-a-gaussian" aria-label="Why compare the latent space with a Gaussian">Why compare the latent space with a Gaussian</a></li>
+                <li>
+                    <a href="#why-force-latent-space-to-resemble" aria-label="Why force latent space to resemble">Why force latent space to resemble</a></li>
+                <li>
+                    <a href="#but-why-gaussian-and-not-other-distributions" aria-label="But why Gaussian and not other distributions">But why Gaussian and not other distributions</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="brief-intro---autoencoders">Brief Intro - AutoEncoders<a hidden class="anchor" aria-hidden="true" href="#brief-intro---autoencoders">#</a></h1>
+<p>As the name suggests, Variational AutoEncoders (VAEs) belong to the broader family of AutoEncoders. There are several types of AutoEncoders, each designed to address different problem statements. In this section, our focus will be on Variational AutoEncoders. But before that, let’s briefly touch upon the general concept of AutoEncoders and the limitations that VAEs aim to address.</p>
+<p>Common types of AutoEncoders include:</p>
+<ul>
+<li>AutoEncoders</li>
+<li>Deniosing AutoEncoders</li>
+<li>Sparse AutoEncoders</li>
+<li>Variational AutoEncoders</li>
+</ul>
+<h2 id="autoencoder-process">AutoEncoder Process<a hidden class="anchor" aria-hidden="true" href="#autoencoder-process">#</a></h2>
+<p>All AutoEncoder models consist of three main components: Encoder, Latent Space, and Decoder.
+The Encoder compresses the input data(X) into a compact representation (latent space-Z).
+This latent representation(Z) is then passed to the Decoder, which attempts to reconstruct the original input(X).</p>
+<p>The process can be summarized mathematically as:</p>
+<p>Z = Encoder(X)<br>
+X&rsquo; = Decoder(Z)<br>
+Loss = Σ(X - X&rsquo;)²</p>
+<h2 id="issues-with-autoencoders">Issues with AutoEncoders<a hidden class="anchor" aria-hidden="true" href="#issues-with-autoencoders">#</a></h2>
+<p>During training, the encoder compresses input data into a latent space. However, this latent space is often non-continuous and non-regularized. If we sample random points from this space and pass them through the decoder, when we pass the random points from latent space decoder might not be able to generate a meningful image, since the decoder hasn&rsquo;t learned how to handle unseen data</p>
+<p>As a result:</p>
+<ul>
+<li>
+<p>Standard AutoEncoders are not well-suited for generative tasks (i.e., creating new data).</p>
+</li>
+<li>
+<p>They are primarily useful for dimensionality reduction and input compression.</p>
+</li>
+</ul>
+<h1 id="terminology-required-for-vae">Terminology Required for VAE<a hidden class="anchor" aria-hidden="true" href="#terminology-required-for-vae">#</a></h1>
+<p>Variational AutoEncoders (VAEs) are designed to address key limitations of traditional AutoEncoders. As discussed earlier, the latent space learned by standard AutoEncoders is not continuous or well-structured, making them ineffective for generating new data.</p>
+<p>VAEs overcome this by regularizing the latent space to follow a continuous and structured distribution — typically a Gaussian distribution  𝑁(0,𝐼).To understand how this is achieved, it is important to understand few fundamental concepts from Bayesian probability theory.</p>
+<p>Let’s explore these concepts using an intuitive example and relate them to the context of VAEs.</p>
+<p>Let’s explore these concepts using an intuitive example and relate them to the context of VAEs.</p>
+<h2 id="bayesian-probability-concepts">Bayesian Probability Concepts:<a hidden class="anchor" aria-hidden="true" href="#bayesian-probability-concepts">#</a></h2>
+<p>Let’s use an analogy:</p>
+<p>X = Observed Data(e.g., a prepared dish)
+Z = Latent Variable (e.g., a recipe)</p>
+<p><strong>P(Z|X) = Posterior Probability</strong></p>
+<p>Given the dish (X), what is the probability that it was prepared using recipe
+Z</p>
+<p><strong>P(Z) = Prior Probability</strong></p>
+<p>What is the probability that recipe Z exists in the chef&rsquo;s recipe book(irrespective of any Dish)</p>
+<p><strong>P(X|Z) = Likelihood</strong></p>
+<p>Given a specific recipe Z, what is the probability of producing the observed dish X</p>
+<p><strong>P(X) = Marginal Probability</strong>
+What is the total probability of observing the dish X, across all possible recipes</p>
+<p>Since many different recipes could potentially produce a similar dish, we compute this by averaging (integrating or summing) over all recipes: This is also called marginal likelihood and acts as a normalizing constant in Bayes’ Theorem.</p>
+<p>P(X) = Σ P(X|Z) * P(Z)</p>
+<p>Baye&rsquo;s Theorem  P(Z|X) =    $P(X|Z) * P(Z)/ P(X)$</p>
+<h3 id="bayesian-probabilty-for-vae">Bayesian Probabilty for VAE:<a hidden class="anchor" aria-hidden="true" href="#bayesian-probabilty-for-vae">#</a></h3>
+<p><strong>P(Z|X) = Posterior Probability</strong></p>
+<p>Given the image ( X ), this is the probability that it was generated from the latent distribution ( Z ).</p>
+<p>→ In the context of a VAE, this is modeled by the <strong>encoder</strong>: it approximates ( P(Z|X) ) using ( q(Z|X) ).</p>
+<p>** P(Z) = Prior Probability **</p>
+<p>This is our assumption about the distribution of latent variables ( Z ) before seeing any data.<br>
+→ In VAEs, this is typically assumed to be a <strong>standard Gaussian</strong> 𝒩(0, I), defining a smooth latent space.</p>
+<p><strong>P(X|Z) = Likelihood</strong></p>
+<p>Given a latent variable ( Z ), this is the likelihood of generating the image ( X ).</p>
+<p>→ In a VAE, this is modeled by the <strong>decoder</strong>: it tries to reconstruct ( X ) from ( Z ).</p>
+<p><strong>P(X) = Marginal Probabitlity</strong></p>
+<p>This is the total probability of observing image ( X ), integrating over all possible latent variables ( Z ).</p>
+<p>→ The <strong>goal of the VAE</strong> is to maximize this value (maximize likelihood of the data).</p>
+<p>P(X) = ∫ P(X|Z) * P(Z) * d(Z)</p>
+<p>This integral is computationally intractable (i.e., not feasible to evaluate directly due to the infinite possibilities over the continuous latent space Z). Therefore, VAEs optimize the <strong>Evidence Lower Bound (ELBO)</strong> on log P(X), which we will cover in the next section.</p>
+<p><strong>Example:</strong></p>
+<p>Suppose the latent space Z is a 1-dimensional real-valued variable.</p>
+<p>Let&rsquo;s assume:</p>
+<p>Z ~ 𝒩(0,1) Standard Normal Distribution
+X is an image (say, a handwritten digit), and the model learns P(X|Z)</p>
+<p>Now to compute P(X) = ∫ P(X|Z) * P(Z) * d(Z)</p>
+<p>You would need to consider every possible value of Z to calculate this integral. But since: The real number line is continuous and uncountably infinite, there are infinitely many values Z ∈ (−∞,∞)</p>
+<p>we can&rsquo;t sum or evaluate each one explicitly — hence, it&rsquo;s intractable.</p>
+<p>Even in 1D, there are infinite values of Z to integrate over.</p>
+<p>In practice, Z is often multi-dimensional, e.g.,
+$R^{20}$, $R^{100}$ etc.</p>
+<p>Hence the integral becomes a high-dimensional integral over an infinite space — something that is impossible to compute exactly without approximation</p>
+<h1 id="evidence-lowerbound">Evidence LowerBound<a hidden class="anchor" aria-hidden="true" href="#evidence-lowerbound">#</a></h1>
+<p>The objective of a VAE is to generate images from a latent space that follows a continuous Gaussian distribution. This allows the model to produce meaningful samples—either from the training distribution or newly generated ones—by learning a smooth latent space, in other words  Maximizing the Probability of observing X under generative Model</p>
+<p>Marginal Likelihood :- $P(X), log P(X)$</p>
+<p>In the context of VAEs, we deal with two distributions:</p>
+<ul>
+<li>$P(X)$: Marginal distribution of observed data</li>
+<li>$P(Z)$: Prior distribution over latent variables</li>
+</ul>
+<p>While the data distribution P(X) may not be Gaussian, we impose a Gaussian prior on the latent space P(Z) through training, we aim to learn a mapping such that the encoder transforms input data into a latent space distribution that approximates this prior.</p>
+<img src="vae.jpg" alt="VAE Distributions" width="600"/>
+<h2 id="deriving-the-evidence-lower-bound-elbo">Deriving the Evidence Lower Bound (ELBO)<a hidden class="anchor" aria-hidden="true" href="#deriving-the-evidence-lower-bound-elbo">#</a></h2>
+<p>We know that whole process comprise of 3 components Encoder, Latent Space &amp; Decoder and from Bayesian Proabitility we know that to calculate</p>
+<p>$$P(X) = ∫ P(X|Z) * P(Z) dZ$$</p>
+<p>$$P(Z \mid X) = \frac{P(X|Z) * P(Z)}{P(X)}$$</p>
+<p>According to Bayesian principles, the marginal likelihood P(X) is intractable due to the integral over infinitely many possible latent variables
+Similarly, the posterior $P(Z|X)$ which depends on $P(X)$ is also intractable. However, in order to compute the loss and perform backpropagation in a Variational Autoencoder, we require access to $P(Z|X)$.To overcome this limitation, we approximate the true posterior $P(Z|X)$ with a tractable variational distribution $Q(Z|X)$ which is learned by the encoder.</p>
+<div style="text-align: left;">
+$$
+P(Z|X) \approx Q(Z|X)
+$$
+</div>
+<div style="text-align: left;">
+$$
+P(X) = \int P(X|Z) P(Z) dZ
+$$
+</div>
+<div style="text-align: left;">
+$$
+P(Z|X) = \frac{P(X|Z) P(Z)}{P(X)}
+$$
+</div>
+<div style="text-align: left;">
+$$
+P(X) = \int P(X|Z) P(Z) dZ
+$$
+</div>
+<div style="text-align: left;">
+$$
+\log P(X) = \log \int P(X|Z) P(Z) dZ \quad \text{(Its common to take log for numerical stability)}
+$$
+</div>
+<div style="text-align: left;">
+$$P(X, Z) = P(X|Z) P(Z) \quad \text{(From Chain Rule of Probability)}$$
+</div>
+<p>Hence $log P(X)$ can be re-written as below</p>
+<div style="text-align: center;">
+$$
+\begin{aligned}
+\log P(X) &= \log \int P(X,Z)dZ \\
+\log P(X) &= \log \int \frac{Q(Z|X)}{Q(Z|X)} P(X,Z) dZ \\
+\log P(X) &= \log \int \frac{P(X,Z)} {Q(Z|X)} * Q(Z|X) * dZ
+\end{aligned}
+$$
+</div>
+<p>$$\mathbb{E}_{q(z|x)} f(Z)  = ∫ f(Z) * Q(Z|X) * dZ \quad \textbf{(From Expection Formula)}$$</p>
+<p>$$f(Z) = \frac{P(X,Z)}{Q(Z|X)}$$</p>
+<p>thus effectively we can write logP(X) as below</p>
+<div style="text-align: center;">
+$$
+\log P(X) = \log \mathbb{E}_{q(z|x)}\left[\frac{P(X,Z)}{q(z|x)}\right]
+$$
+</div>
+<div style="text-align: center;">
+$$
+\log \mathbb{E}_{Q(Z|X)}\left[\frac{P(X,Z)}{Q(Z|X)}\right] \geq \mathbb{E}_{Q(Z|X)}\left[\log \frac{P(X,Z)}{Q(Z|X)}\right] \quad \text{(Jenson's Inequality)}
+$$
+</div>
+<div style="text-align: center;">
+$$
+\textbf{Equation of ELBOW:- } \log P(X) \geq \mathbb{E}_{q(z|x)}\left[\log \frac{P(X,Z)}{Q(Z|X)}\right]
+$$
+</div>
+<div style="text-align: center;">
+$$
+\textbf{From Bayes Theorem:-} P(X,Z) = P(X|Z) \cdot P(Z)
+$$
+</div>
+<div style="text-align: center;">
+$$
+\textbf{Expanding the Expectation:- } \mathbb{E}_{q(z|x)}\left[\log \frac{P(X,Z)}{Q(Z|X)}\right] = \mathbb{E}_{q(z|x)}\left[\log \frac{P(X|Z) \cdot p(Z)}{q(z|x)}\right]
+$$
+</div>
+<div style="text-align: center;">
+$$
+\begin{aligned}
+    \mathbb{E}_{Q(Z|X)}\left[\log \frac{P(X|Z) \cdot P(Z)}{Q(Z|X)}\right] &= \mathbb{E}_{Q(Z|X)}[\log P(X|Z)] \\
+    &\quad + \mathbb{E}_{Q(Z|X)}\left[\log \frac{P(Z)}{Q(Z|X)}\right]
+\end{aligned}
+$$
+</div>
+<div style="text-align: center;">
+$$ \textbf{From KL Divergence:-}
+\text{KL}(q(z|x)||p(z)) = \mathbb{E}_{q(z|x)}\left[\log \frac{q(z|x)}{p(z)}\right] = -\mathbb{E}_{q(z|x)}\left[\log \frac{p(z)}{q(z|x)}\right]
+$$
+</div>
+<div style="text-align: center;">
+$$\textbf{Final ELBO Expression:-}
+\log P(X) \geq \underbrace{\mathbb{E}_{Q(Z|X)}[\log P(X|Z)]}_{\text{Reconstruction Loss}} - \underbrace{\text{KL}(Q(Z|X)||P(Z))}_{\text{KL Divergence}}
+$$
+</div>
+<p><strong>Intution behind ELBOW:-</strong> The marginal likelihood $logP(X)$ is intractable due to above discussed reasons, the integral over all possible latent variables
+Z is computationally expensive and often not solvable analytically.</p>
+<p>However, our goal is to maximize P(X) which corresponds to training the model to better generate observed data.Generating Observed data with the trained Model(parameters) , Since we cannot maximize $log P(X)$ directly, we instead construct a tractable surrogate function that serves as a lower bound to it — the Evidence Lower Bound (ELBO).</p>
+<p>If we are able to maximize this lower bound, we are guaranteed to maximize the value of $ log P(X)$</p>
+<p><strong>Analogy</strong>:- Imagine trying to measure the depth of the deepest part of an ocean, but due to dangerous conditions, it&rsquo;s impossible to access directly.</p>
+<p>Instead, you find a nearby ocean that is similar in structure and composition, but shallower and safe to measure.</p>
+<p>Once you determine the depth of this nearby ocean, you at least know that the original ocean is deeper than this — giving you a lower bound on its true depth.</p>
+<p>In this analogy:</p>
+<ul>
+<li>The original ocean = $log P(X) (true but intractable log-likelihood)</li>
+<li>The reference ocean = ELBO (tractable, approximated lower bound)</li>
+<li>Maximizing the reference depth = optimizing the ELBO during training</li>
+</ul>
+<p>Also, This lower bound becomes tighter as our variational approximation $Q(Z|X)$
+becomes closer to the true posterior $P(Z|X)$ which is measured via KL divergence. When the KL divergence goes to zero, ELBO equals $log P(X)$</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"></code></pre></div><h1 id="reparameterization-trick">Reparameterization Trick<a hidden class="anchor" aria-hidden="true" href="#reparameterization-trick">#</a></h1>
+<h2 id="necessity-for-reparameterization">Necessity for Reparameterization:<a hidden class="anchor" aria-hidden="true" href="#necessity-for-reparameterization">#</a></h2>
+<p>If we revisit the VAE training process, it consists of three key steps:</p>
+<ul>
+<li>
+<p>The input is passed through an encoder that outputs the parameters of a latent distribution.</p>
+</li>
+<li>
+<p>A sample is drawn from this latent space</p>
+</li>
+<li>
+<p>The sampled latent variable is passed to the decoder to reconstruct the output.</p>
+</li>
+</ul>
+<p>Like any machine learning model, a VAE learns its objective through training. In early iterations, it performs poorly and improves gradually by minimizing a loss function that guides the parameter updates (weights and biases).</p>
+<p>In the context of VAEs, there are two objectives, hence two associated loss terms:</p>
+<p><strong>Reconstruction Loss</strong></p>
+<p>The decoder should be able to reconstruct the original input (e.g., image) or generate a meaningful approximation of it. During training, the decoder’s output is compared with the input passed to the encoder. This forms the reconstruction loss, which is typically measured using Cross-Entropy Loss, Mean Squared Error (MSE), or Binary Cross-Entropy (BCE).</p>
+<p><strong>KL Divergence Loss</strong></p>
+<p>The latent space learned by the encoder should follow a standard Gaussian prior distribution. To enforce this, we measure how much the encoder&rsquo;s distribution $Q(Z|X)$ deviates from prior $P(Z)$ which is usually 𝓝(0,I). This difference is calculated using the KL divergence.</p>
+<p><strong>Challenge: Sampling Breaks Backpropagation</strong></p>
+<p>While calculating the KL divergence and reconstruction loss, we sample from the latent space to generate inputs for the decoder. However, sampling is a non-differentiable operation, which means gradients cannot flow backward through it during training.</p>
+<p>This breaks the end-to-end learning pipeline — the encoder cannot learn how to adjust its parameters to reduce the overall loss.</p>
+<p><strong>Solution:Reparameterization Trick</strong>
+To solve this, we reparameterize the random variable z as a deterministic function of a random noise and learnable parameters:</p>
+<p>$$ Z = μ(X) + σ(X) * ϵ  ,\quad ϵ ≈ 𝒩(0,I) $$</p>
+<p>This separates the randomness $ϵ$ from the network parameters (μ,σ). Now, the sampling step becomes differentiable with respect to μ and σ, allowing gradients to flow through and the encoder to be trained via backpropagation.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"></code></pre></div><h1 id="final-loss-function">Final Loss Function<a hidden class="anchor" aria-hidden="true" href="#final-loss-function">#</a></h1>
+<p>We start with our Loss function that has two components , Reconstruction Loss &amp; KL Divergence Loss</p>
+<div style="text-align: center;">
+$$
+\textbf{ELBO Expression:-}\quad \log P(X) \geq \underbrace{\mathbb{E}_{Q(Z|X)}[\log P(X | Z)]}_{\text{Reconstruction Loss}} - \underbrace{\text{KL}(Q(Z|X)||P(Z))}_{\text{KL Divergence}}
+$$
+</div>
+<p>We have closed form for KL Divergence between, to calculate difference between two distributions</p>
+<p>$Q(Z|X) = 𝒩(μ,σ^2) - \textbf{encoder output (approximate posterior)}$ \</p>
+<p>$P(Z) = 𝒩(0,I) - \textbf{Prior}$</p>
+<p>$$
+D_{\text{KL}} \left( 𝒩(\mu, \sigma^2) ,|, 𝒩(0, 1) \right)
+= \frac{1}{2} \sum_{i=1}^{d} \left( \mu_i^2 + \sigma_i^2 - \log \sigma_i^2 - 1 \right)
+$$</p>
+<p>The KL divergence measures how far $Q(Z|X)$ is from Prior $P(Z)$ per dimension of the latent space. Since the prior $P(Z)$ is fixed to standard normal 𝒩(0,1) and the encoder gives us μ(X) &amp; σ(X) these are captured from encoders&rsquo; output</p>
+<p>The final loss function is</p>
+<div style="text-align: center;">
+$$
+- \underbrace{\mathbb{E}_{Q(Z|X)}[\log P(X | Z)]}_{\text{Reconstruction Loss}} + \underbrace{\left(\frac{1}{2} \sum_{i=1}^{d} (\mu_i^2 + \sigma_i^2 - \log \sigma_i^2 - 1)\right)}_{\text{KL Divergence}}
+$$
+</div>
+<p>The original ELBO is a lower bound we try to maximize.But most optimizers minimize loss, so we negate the ELBO to convert it into a minimization objective.</p>
+<h1 id="few-important-points-on-vaes-choices-of-using-gaussian-distribution">Few Important Points on VAE&rsquo;s choices of using Gaussian Distribution<a hidden class="anchor" aria-hidden="true" href="#few-important-points-on-vaes-choices-of-using-gaussian-distribution">#</a></h1>
+<h2 id="why-compare-the-latent-space-with-a-gaussian">Why compare the latent space with a Gaussian<a hidden class="anchor" aria-hidden="true" href="#why-compare-the-latent-space-with-a-gaussian">#</a></h2>
+<p>In VAEs, we force the latent space Z to follow a known, simple distribution, typically the standard normal distribution $𝒩(0,I)$ even though the true posterior over $P(Z|X)$ might be complex.</p>
+<p>The latent space is intended to be a compressed representation of your data distribution. For example:</p>
+<ul>
+<li>A cat image X gets encoded into some point Z in latent space.</li>
+<li>Ideally, similar inputs (like other cat images) map to nearby regions in that space.</li>
+</ul>
+<h2 id="why-force-latent-space-to-resemble">Why force latent space to resemble<a hidden class="anchor" aria-hidden="true" href="#why-force-latent-space-to-resemble">#</a></h2>
+<p>A. If we let the encoder produce arbitrary Q(Z|X) the latent space would become non-continuous or clustered in strange regions.</p>
+<p>By constraining all encodings to be close to a standard Gaussian, we ensure the entire latent space is:</p>
+<ul>
+<li>Dense (no holes)</li>
+<li>Continuous (no abrupt jumps)</li>
+<li>Interpolatable (you can walk between two points and get meaningful outputs)</li>
+</ul>
+<p>B. Regularization</p>
+<p>If we only trained the autoencoder to minimize reconstruction loss, it might overfit: memorize  X-&gt; Z-&gt; X but produce garbage when sampling new Z.</p>
+<p>C.Generative Capability</p>
+<p>Once the model is trained, we can sample $ Z ≈ 𝒩(0,I) $ and feed to decoder to generate new, meaningful data.</p>
+<p>Without the Gaussian prior, this would be impossible — we wouldn’t know where to sample from.</p>
+<h2 id="but-why-gaussian-and-not-other-distributions">But why Gaussian and not other distributions<a hidden class="anchor" aria-hidden="true" href="#but-why-gaussian-and-not-other-distributions">#</a></h2>
+<ul>
+<li>
+<p>Gaussian distributions are mathematically convenient — they have a closed-form KL divergence.</p>
+</li>
+<li>
+<p>The reparameterization trick works smoothly with Gaussians.</p>
+</li>
+<li>
+<p>Sampling and interpolating from Gaussians is straightforward.</p>
+</li>
+</ul>
+<p>However in advanced VAE&rsquo;s You can use more complex priors (like Gaussian Mixture Models, VampPriors, flows, etc)</p>
+<p>These are used when the data structure is more complicated than what a unimodal Gaussian can capture.</p>
+<p>Analogy:</p>
+<p>Imagine you&rsquo;re organizing books into shelves:</p>
+<ul>
+<li>
+<p>Without constraints: Books are scattered randomly — you don’t know where to find a particular topic.</p>
+</li>
+<li>
+<p>You force all books to be sorted neatly by topic on a continuous, ordered shelf.</p>
+</li>
+</ul>
+<p>Now we can pick a point (sample Z) and be confident it will lead you to a coherent topic (decode to a valid image or text).</p>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/"></a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
