@@ -2,6 +2,8 @@
 title: "Introduction to GEMM & CUDA Terminology"
 ---
 
+<!--more-->
+
 # Intro
 
 Every time you ask ChatGPT a question, get a movie recommendation on Netflix, or watch your phone recognize faces in photos, billions of matrix multiplications are happening behind the scenes. This fundamental mathematical operation has become the computational backbone of modern artificial intelligence.
