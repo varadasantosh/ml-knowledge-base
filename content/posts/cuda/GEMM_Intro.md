@@ -1,7 +1,6 @@
 ---
 title: "Introduction to GEMM & CUDA Terminology"
 ---
-
 <!--more-->
 
 # Intro
@@ -203,20 +202,20 @@ Though the GPU performs the actual computation, the CPU orchestrates the entire 
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 18px; 
     line-height: 1.5; 
     overflow-x: auto;
   "><code>
-       __global__ void scaleMatrix(float* A,  int N , int C) {
+    __global__ void scaleMatrix(float* A,  int N , int C) {
 
-            int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    
-            if (idx < N) {
-           
-                float sum = 0.0f;
-                A[idx] = C * A[idx];
-            }
+        int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+        if (idx < N) {
+        
+            float sum = 0.0f;
+            A[idx] = C * A[idx];
         }
+    }
   </code></pre>
 </div>
 
@@ -244,45 +243,31 @@ Though the GPU performs the actual computation, the CPU orchestrates the entire 
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 18px; 
     line-height: 1.5; 
     overflow-x: auto;
   "><code>
-            // Example workflow
+  // Example workflow
 
-            float *h_A;          // Host arrays
-            float *d_A;          // Device arrays
+  float *h_A;          // Host arrays
+  float *d_A;          // Device arrays
 
-            // Allocate and initialize host memory
+  // Allocate and initialize host memory
 
-            h_A = (float*)malloc(size);
-            cudaMalloc(&d_A, size);          // Allocate device memory
-            cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice); // Copy to device
+  h_A = (float*)malloc(size);
+  cudaMalloc(&d_A, size);          // Allocate device memory
+  cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice); // Copy to device
 
-            
-            dim3 blockDim(256); // Define Block Configuration
-            dim3 gridDim(256);  // Define Grid Configuration
-            scaleMatrix<<< gridDim,blockDim >>>(d_A, N, C); // Launch Kernel
-            cudaMemcpy(h_A, d_A, size, cudaMemcpyDeviceToHost); // Copy results back from Device to Host
+  
+  dim3 blockDim(256); // Define Block Configuration
+  dim3 gridDim(256);  // Define Grid Configuration
+  scaleMatrix<<< gridDim,blockDim >>>(d_A, N, C); // Launch Kernel
+  cudaMemcpy(h_A, d_A, size, cudaMemcpyDeviceToHost); // Copy results back from Device to Host
     </code>
     </pre>
 </div>
 
  
-
- ## SIMT (Single Instruction Multiple Thread)
-
-SIMT is a Programming Model for writing CUDA Kernel's , consider multiplying Matrix A of size(256,256) by a constant C , the instruction **A[i][j] = C * A[i][j]** remains same for all the iterations of the loop except the change in index, this nested loop can be converted to be executed in parallel , where each thread calculates one element in GPU.
-
-Note:- In modern Architectures there are some modifications where collection of Threads work on single element like Thread Block Clusters, but for our discussion this is fine now.
-
-   ```
-
-    for i in range(256):
-        for j in range(256):
-            A[i][j] = C * A[i][j]
-
-   ```
 
 ## Thread Hierarchy
 
@@ -296,12 +281,11 @@ The resource allocation involves a two-tier responsibility model:
 Developer's doesn't specify individual threads directly. Instead number of required threads expressed through Grid & Thread Blocks configuration which uses a hierarchical approach: **Grid → Thread Blocks → Warps → Threads**, both Grids & Blocks configurations can be expressed using 1D,2D & 3D to address problem statements belonging to diffrent domains.
 
 
-
 ### Warp
 
-A critical aspect of CUDA's execution model is **Warp** - This is not controlled by Developers, whiel we specify the Grid & Block dimension we don't specify the Warp which is controlled by Schedulers which is constant and always Group of 32 threads belonging to one unit.
+A critical aspect of CUDA's execution model is the Warp - This is not controlled by developers. While we specify the grid and block dimensions, we don't specify the warp size, which is controlled by schedulers and is constant at 32 threads per warp executed simultaneously.
 
-An importatnt note about Warp is Even if we specify just 1 thread per Block, the warp scheduler still allocates a full warp of 32 threads, with 31 threads remaining unused. This significantly impacts SM utilization and should be considered when designing kernel launch configurations. Below table gives glimpse the impact of Thread Block size on Warp utilization.
+An important note about warps is that even if we specify just 1 thread per block, the warp scheduler still allocates a full warp of 32 threads, with 31 threads remaining unused. This significantly impacts SM utilization and should be considered when designing kernel launch configurations. The table below shows the impact of thread block size on warp utilization.
 
 
 | Thread Block Size | Warps Used  | Warp Utilization | 
@@ -312,6 +296,23 @@ An importatnt note about Warp is Even if we specify just 1 thread per Block, the
 | 64 Threads        |    2 Warps  |    100% (64/64)  |
 | 96 Threads        |    3 Warps  |    100% (96/96)  |
 
+
+
+ ## SIMT (Single Instruction Multiple Thread)
+
+SIMT is the execution model used by CUDA kernels. Consider multiplying matrix A of size (256,256) by a constant C. The instruction **A[i][j] = C * A[i][j]** remains the same for all iterations except for the index values. This nested loop can be converted to execute in parallel, where each thread calculates one element on the GPU.
+
+This is achieved by issuing the same instruction to a group of 32 threads (a warp), as discussed earlier. Though threads are the fundamental building blocks for GPU processing, instructions are issued at the warp level. Hence, when an instruction is issued, it's executed by all active threads in the warp.
+
+Note: In modern architectures, there are modifications where collections of threads work together on computations (like Thread Block Clusters), but this basic SIMT model covers the fundamental concept.
+
+```
+
+for i in range(256):
+    for j in range(256):
+        A[i][j] = C * A[i][j]
+
+```
 
 ### Grid Configuration
 
@@ -341,20 +342,19 @@ An importatnt note about Warp is Even if we specify just 1 thread per Block, the
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 15px; 
     line-height: 1.5; 
     overflow-x: auto;
   "><code>
-            dim3 gridDim(16, 16);   // 2D grid of thread blocks
+    dim3 gridDim(16, 16);   // 2D grid of thread blocks
     </code>
-     <ul style="list-style:none; padding:0; margin:0;">
-         <li style="display:inline; margin-right:12px;">The grid contains 256 thread blocks (16 × 16)</li>
-         <li style="display:inline; margin-right:12px;">16 thread blocks along the X dimension</li>
-         <li style="display:inline; margin-right:12px;">16 thread blocks along the Y dimension</li>
-         <li style="display:inline;">This creates a logical 2D arrangement of thread blocks</li>
-    </ul>
+  <b>The grid contains 256 thread blocks (16 × 16)</b>
+  <b>16 thread blocks along the X dimension</b>
+  <b>16 thread blocks along the Y dimension</b>
+  <b>This creates a logical 2D arrangement of thread blocks</b>
     </pre>
 </div>
+
 
 
 ### Thread Block Configuration
@@ -384,18 +384,16 @@ An importatnt note about Warp is Even if we specify just 1 thread per Block, the
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 15px; 
     line-height: 1.5; 
     overflow-x: auto;
   "><code>
-            dim3 blockDim(16, 16) // 2D Thread Block;   // 2D grid of thread blocks
+    dim3 blockDim(16, 16) // 2D Thread Block;   // 2D grid of threads
     </code>
-     <ul style="list-style:none; padding:0; margin:0;">
-         <li style="display:inline; margin-right:12px;">Each thread block contains 256 threads (16 × 16)</li>
-         <li style="display:inline; margin-right:12px;">16 threads along X dimension</li>
-         <li style="display:inline; margin-right:12px;">16 threads along Y dimension</li>
-         <li style="display:inline;">This creates a logical 2D arrangement of threads in each block</li>
-    </ul>
+  <b>Thread block contains 256 threads (16 × 16)</b>
+  <b>16 threads along X dimension</b>
+  <b>16 threads along Y dimension</b>
+  <b>This creates a logical 2D arrangement of threads in each block</b>
     </pre>
 </div>
 
@@ -490,26 +488,25 @@ Consider matrix multiplication for matrices **A=(1024×1024)**, **B=(1024×1024)
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 15px;
     line-height: 1.; 
     overflow-x: auto;
   "><code>
-        gridDim = (32,1024)  => 32 Thread Blocks in X dimension, 1024 Thread Blocks in Y dimension
-        blockDim = (32,1)    => 32 Threads in X dimension, 1 Thread in Y dimension
+  gridDim = (32,1024)  => 32 Thread Blocks in X dimension, 1024 Thread Blocks in Y dimension
+  blockDim = (32,1)    => 32 Threads in X dimension, 1 Thread in Y dimension
 
-        gridDim.x = 32       blockDim.x = 32
-        gridDim.y = 1024     blockDim.y = 1
+  gridDim.x = 32       blockDim.x = 32
+  gridDim.y = 1024     blockDim.y = 1
 
-        threadIdx.x range: 0-31     blockIdx.x range: 0-31
-        threadIdx.y range: 0        blockIdx.y range: 0-1023  
+  threadIdx.x range: 0-31     blockIdx.x range: 0-31
+  threadIdx.y range: 0        blockIdx.y range: 0-1023  
     </code>
         
-    <ul style="list-style:none; padding:0; margin:0;">
-      <li style="display:inline; margin-right:12px;">Total Thread Blocks: 32 × 1024 = 32,768 blocks</li>
-      <li style="display:inline; margin-right:12px;">Total Threads per Block: 32 × 1 = 32 threads</li>
-      <li style="display:inline; margin-right:12px;">Total Warps per Block: 32 ÷ 32 = 1 warp per block</li>
-      <li style="display:inline; margin-right:12px;">Total Threads: 1,048,576 threads (perfect for 1024×1024 matrix)</li>
-    </ul>
+  <b>Total Thread Blocks: 32 × 1024 = 32,768 blocks</b>
+  <b>Total Threads per Block: 32 × 1 = 32 threads</b>
+  <b>Total Warps per Block: 32 ÷ 32 = 1 warp per block</b>
+  <b>Total Threads: 1,048,576 threads (perfect for 1024×1024 matrix)</b>
+    
     </pre>
 </div>
 
@@ -541,6 +538,7 @@ Consider matrix multiplication for matrices **A=(1024×1024)**, **B=(1024×1024)
     padding: 16px; 
     margin: 0; 
     font-size: 0.95rem; 
+    font-size: 15px;
     line-height: 1.; 
     overflow-x: auto;
   "><code>
@@ -625,7 +623,7 @@ threadIdx(0,0)    threadIdx(1,0)    threadIdx(2,0)    ...    threadIdx(31,0)
     color: #2d2d2d; 
     padding: 16px; 
     margin: 0; 
-    font-size: 0.95rem; 
+    font-size: 20px;
     line-height: 1.; 
     overflow-x: auto;
   "><code>
@@ -1000,15 +998,56 @@ idx = 15 * 1024 + (0-15) = 15360-15375
 
 GPU kernels can be classified as either **memory bound** or **compute bound** based on their primary performance bottleneck. Understanding this classification is crucial for choosing the right optimization approach.
 
+Like every computing system, GPUs have two fundamental dimensions: **execution capability** and **memory bandwidth**. Every system has scaling limits, and to improve performance, we can optimize along either dimension until reaching the maximum limits.
+
 ### Key Classification Metric: Arithmetic Intensity
 
 The fundamental metric for classification is **Arithmetic Intensity**:
 
-```
-Arithmetic Intensity = FLOPs (Floating Point Operations) / Bytes Accessed
-```
+<div style="
+  border: 2px solid #4CAF50; 
+  border-radius: 8px; 
+  overflow: hidden; 
+  margin: 1em 0;
+">
+
+  <div style="
+    font-family: 'Courier New', Monaco, monospace;
+    font-weight: 600;
+    font-size: 18px;
+    background-color: #4CAF50; 
+    color: white; 
+    font-weight: bold; 
+    text-align: center; 
+    padding: 6px 0;
+  ">
+    Kernel Classification : Arithmetic Intensity 
+  </div>
+
+  <!-- White code block -->
+  <div style="
+    
+    background-color: #ffffff; 
+    color: #2d2d2d; 
+    padding: 16px; 
+    margin: 0; 
+    font-size: 15px;
+    line-height: 1.5; 
+    overflow-x: auto;
+  ">
+<span style="color: #f57c00;"><b>Arithmetic Intensity = FLOPs (Floating Point Operations) / Bytes Accessed</b></span>
+
+<span style="color: #f57c00;"><b>Peak Arithemtic Intensity for A100 =  9.75 FLOP/byte</b></span>
+
+<span style="color: #2e7d32;"><b>Above 9.75 FLOP/byte: Compute-bound(can potentially use full 19.5 TFLOPS)</b></span>
+
+<span style="color: #d32f2f;"><b>Below 9.75 FLOP/byte: Memory-bound (limited by 2.0 TB/s bandwidth)</b></span>
+
+</div>
+</div>
 
 ### Kernel Classification Definitions
+
 
 #### Compute Bound Kernels
 
@@ -1029,95 +1068,27 @@ To optimize compute-bound kernels, the focus is on maximizing the efficiency of 
 
 
 **Key Indicators:**
-- High Memory bandwidth utilization (>80%)
 - Low Compute Utilizaion (cores are idle, waiting for data).
+- Poor cache hit rates
+- High memory access latency 
+- Memory access inefficiencies (poor coalescing, cache thrashing)
 
 **Optimization Strategies:**
 
 To optimize memory-bound kernels, the focus is on reducing the amount of data transferred from high-latency memory and improving access patterns. This is achieved by:
 
 - **Maximize data reuse**: Keep frequently accessed data in faster memory levels
-- **Optimize access patterns**: Ensuring memory accesses are coalesced to reduce the number of memory transaction
-- **Use memory hierarchy efficiently**:  Thread Registers (RF) → Shared Memory (SMEM) → L2 Cache → Global Memory (HBM2)
+- **Optimize access patterns**: Ensuring memory accesses are coalesced to reduce the number of memory transactions
+- **Use memory hierarchy efficiently**:  Thread Registers → L1 Cache/Shared Memory → L2 Cache → Global Memory (HBM2)
 - **Use lower precision**: Mixed precision or reduced precision where high accuracy isn't critical
 
 
-**Note:** The performance of a naive GEMM kernel is limited by memory bandwidth. The upcoming sections will show how using shared memory with tiling increases data reuse and reduces expensive round trips to global memory. This allows data to be reused on-chip and makes the kernel's performance dependent on the speed of its mathematical operations, effectively making it compute-bound.
-
-### Coalescing in the context of GEMM
-
- when we examine the Matrix multiplication , though we are able to achieve parallelization by using Grid & Thread Block hierarchy , memory bandwidth causes issues as access to one of our matrix is not coalesced , consider calculating element C[0][0] from multiplying matrices A(256,128) & B(128 , 256) . Observing closely the calculation for C[0][0] we can see that access pattern to matrix A is coalesced while the access patterns to matrix B is not coalesced, this leads us to explore further optimiztions for GEMM.
-
-```
- C[i][j] = A[i][k] * B[k][j]
- C[0][0] = A[0][0] * B[0][0] + A[0][1] * B[1][0] + A[0][2] * B[2][0] + ......+ A[0][127] * B[127][0]
-
-```
-    
-
-
-To handle our 65,536 threads, we need at least 32 SMs (65,536 ÷ 2,048 ≈ 32). While the A100 has enough SMs, the constraint isn't just processing units—it's also memory bandwidth and access patterns.
-
- to state the obvious here we can notice two constraints, technicians who are skilled technicians, generally a plant only has few of them, On the shopfloor they have finite place to keep the parts required to assemble the car, though the parts are available in the warehouse they can't keep all the parts on the Shopfloor due to space constraints.This is similar to our Memory constraints in GPU 
-
-
-Resultant Matrix has 256 * 256 elements C(0,0) => C(256,256) for each elements it requires 128 Operations for instance to calculate the element at C(0,0) we multiply the first row of A matrix A(0, *) with first column of B (*,0) and perform addition operation among all the intermediate outputs , in both cases the * represents 128 elements, hence for calculating C(0,0) it requries  128 Operations, applying this to a matrix of C it requires 256*256*128 operations, these operations are termed as FMA (Fused Multiply & Add) in CUDA terminology.
-
-This can be calculated using different approaches, the naive approache is to calculate each element in sequential manner , C(0,0)=>C(0,1) ... =>C(256,256) this is time taking process, we observe that there is no depednecy between each of these calculations meaning to calculate C(256,256) we don't depend on any of the previous calculations of C matrix hence each element can be calculated independently this is the basic premise that allows us to think towards parallelizing the matrix multiplication operation, to parallelize the whole operation we would need 65536 (256*256) Threads where each thread is responsible for calculating one element in result matrix for instance Thread-0 calculates C(0,0), Thread-65536 Calculates C(255,255). Like mentioned earlier to allocate this work to 65536 threads there are few limitations on the processing & memory fronts below are few
-important specifications for Ampere Architecture(A100). Considering the outlined specification we would need to distribute 65536 across different Streaming Multiprocessors we would need 32 SM's (65536/2048).
+**Upcoming:** The performance of a naive GEMM kernel is limited by memory bandwidth. The upcoming sections will show how using shared memory with tiling increases data reuse and reduces expensive round trips to global memory. This allows data to be reused on-chip and makes the kernel's performance dependent on the speed of its mathematical operations, effectively making it compute-bound.
 
 
 
 
-Ampere Architecture :- 
---------------
-108 Streaming Multiprocessors
-6912 CUDA Cores (64 CUDA Cores per SM)
-432 Tensor Cores (4 Tensor Cores per SM)
-Max Threads per SM - 2048
-Max Warps per SM - 64
-Max ThreadBlock Size:- 1024
 
-
-
-
-CUDA Terminilogy:-
-------------
- 
-Like described earlier GPU has two pillars that whole execution is built on top of  executing Kernels Processing Hierarychy  & Memory Hierarchy
- 
- Kernel :- Function achieving help us to achieve certain objective, ex:- Multiplying matrix by a constant
- Grids:- Collection of Thread Blocks
- Thread Blocks:- Group of Warps
- Warps:- Groupd of Threads
- Threads :- Smallest Unit of execution framework
-
-
- Memory Hierarchy
- ------
- Global Memory :- DRAM
- L2 Cache
- Shared Memory /L1 Cache
- Registers
-
-
-
-
- GEMM has different flavours depending on precision of Operands being used , Processing Units (CUDA Cores, Tensor Cores)
-
-  C = A@B
-
- DGEMM => Double Precision GEMM (Datatype of Operands - Float64)
- SGEMM => Single Precision GEMM (Datatype of Operands - Float32)
- HGEMM => Half Precision GEMM (Datatype of Operands - Float16)
- IGEMM -> Implicit GEMM 
- 
- Strided Batched GEMM => Batch Multiple Small GEMM
- Grouped GEMM => 
-
-
-TILED GEMM:-
--------
 
 Outro:-
 ------
