@@ -1,6 +1,6 @@
 
 ---
-title: "Tiled GEMM"
+title: "Tiled GEMM (Small Matrices)"
 ---
 
 <!--more-->

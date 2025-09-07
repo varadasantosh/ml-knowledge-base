@@ -635,10 +635,6 @@ threadIdx(0,0)    threadIdx(1,0)    threadIdx(2,0)    ...    threadIdx(31,0)
 </div>
 
 
-```
-
-```
-
 #### Coalesced Memory Access Analysis
 
 ##### Perfect Coalescing: Each Warp Accesses Consecutive Memory
