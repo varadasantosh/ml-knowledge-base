@@ -49,7 +49,7 @@ title: "Rotary Positional Embeddings"
 - **Step-1**:-
   <p>
  
-  <img width="373" alt="image" src="[https://github.com/user-attachments/assets/13bcb49c-7a54-425e-bff2-f5ce4b1fca49](https://github.com/varadasantosh/ml-knowledge-base/blob/main/static/images/transformers/position_encodings/Complex%20Numbers%20as%20Rotations-%20The%20Foundation%20of%20RoPE.png)" />
+  <img width="373" alt="image" src="https://github.com/user-attachments/assets/13bcb49c-7a54-425e-bff2-f5ce4b1fca49" />
  
   </p>
   
