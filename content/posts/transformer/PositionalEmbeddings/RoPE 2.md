@@ -54,8 +54,8 @@ title: "Rotary Positional Embeddings"
 
 $$
 \begin{bmatrix}
-x\\&
-y\\&
+x &\\
+y & \\
 \end{bmatrix} =
 \begin{bmatrix}
 rcosA\\
