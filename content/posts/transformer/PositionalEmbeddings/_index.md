@@ -1,3 +1,4 @@
 ---
-title: "Positional Embeddings"
+title: "Positional Encodings"
+
 ---
