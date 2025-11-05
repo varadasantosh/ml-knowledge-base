@@ -70,12 +70,12 @@ $$
 
 $$
 \begin{bmatrix}
-x'\\
+x'\\\
 y'\\
 \end{bmatrix} =
 \begin{bmatrix}
-rcos(A+θ)\\
-rsin(A+θ)\\
+rcos(A+θ)\\\
+rsin(A+θ)
 \end{bmatrix}
 $$
 
