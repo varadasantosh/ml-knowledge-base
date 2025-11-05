@@ -425,7 +425,7 @@ $\theta_{i} = 10000^{\frac{2(i-1)}{d}}$
 
 # Pytorch Implementation
 
-   For step by step explanation please refer to colab [notebook](https://github.com/varadasantosh/deep-learning-notes/blob/tensorflow/Rotary_Embeddings_Implementation.ipynb)
+   For step by step explanation please refer to colab [notebook](https://github.com/varadasantosh/deep-learning-notes/blob/tensorflow/RoPE.ipynb)
 
    Below image illustrate the shape of the tensor passed as input and the output after applying roatry embeddings
 
@@ -463,3 +463,7 @@ def calc_rotary_embeddings(embeddings):
   embeddings[...,1::2] =  embeddings[...,0::2] * sin_theta  + embeddings[...,1::2] * cos_theta
   return embeddings
 ```
+# References
+ - https://arxiv.org/abs/2104.09864
+ - https://towardsdatascience.com/understanding-positional-embeddings-in-transformers-from-absolute-to-rotary-31c082e16b26/
+ - https://aiexpjourney.substack.com/p/an-in-depth-exploration-of-rotary-position-embedding-rope-ac351a45c794 https://medium.com/@DataDry/decoding-rotary-positional-embeddings-rope-the-secret-sauce-for-smarter-transformers-193cbc01e4ed
