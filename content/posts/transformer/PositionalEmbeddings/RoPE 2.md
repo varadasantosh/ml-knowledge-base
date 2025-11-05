@@ -430,7 +430,7 @@ $\theta_{i} = 10000^{\frac{2(i-1)}{d}}$
 
    Below image illustrate the shape of the tensor passed as input and the output after applying roatry embeddings
 
-   ![Input&Ouput Tensor]((/images/transformers/position_encodings/rotar_input_tensor.png)
+   ![Input&Ouput Tensor](/images/transformers/position_encodings/rotar_input_tensor.png)
 
 <img width="514" alt="image" src="https://github.com/user-attachments/assets/b1e1fdc8-cbcc-40a1-a211-af7fadd4d2cb" />
 
