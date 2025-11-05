@@ -48,7 +48,7 @@ title: "Rotary Positional Embeddings"
 
 - **Step-1**:-
 
-    ![ComplexnumberRotation_RoPE Foundation](/images/transformers/position_encodings/RoPE_Foundation.png)
+    ![RoPE Foundation](/images/transformers/position_encodings/RoPE_Foundation.png)
   
   **cosA= x/r** , **sinA= y/r**
 
