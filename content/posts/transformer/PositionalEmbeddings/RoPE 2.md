@@ -154,7 +154,7 @@ If we extend this two two vectors **P** & **Q** which makes angle **$\theta_{1}$
 $$P =
 \begin{bmatrix} \cos\theta_{1} & -\sin\theta_{1}\\\
 \sin\theta_{1} & \cos\theta_{1} \end{bmatrix}
-\begin{bmatrix} x_{1} \\
+\begin{bmatrix} x_{1} \\\
 y_{1} \end{bmatrix}
 \quad
 Q =
