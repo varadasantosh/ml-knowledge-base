@@ -90,8 +90,8 @@ x'\\
 y'\\
 \end{bmatrix} =
 \begin{bmatrix}
-r (cosA cosθ - sinA sinθ)\\
-r (sinA cosθ + cosA sinθ)\\
+r (cosA cosθ - sinA sinθ)\\\
+r (sinA cosθ + cosA sinθ)
 \end{bmatrix}
 $$
 
@@ -102,8 +102,8 @@ x'\\
 y'\\
 \end{bmatrix} =
 \begin{bmatrix}
-r cosA cosθ - rsinA sinθ\\
-r sinA cosθ + r cosA sinθ\\
+r cosA cosθ - rsinA sinθ\\\
+r sinA cosθ + r cosA sinθ
 \end{bmatrix}
 $$         
 
