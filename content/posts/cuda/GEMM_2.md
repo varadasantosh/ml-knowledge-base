@@ -324,7 +324,8 @@ Block(0,255):  C[255][0] =  A[255][0] * B[0][0]  + A[255][1] * B[1][0]  + ... + 
 
 # Naive GEMM Code
 
-
+<code> <pre>
+ <div>
   #include &lt;stdio.h&gt;
   #include &lt;stdlib.h&gt;
   #include &lt;time.h>&gt;
@@ -421,7 +422,7 @@ int main() {
 }
 </pre>
 </div>
-
+</code>
 # Summary
 
 ## Issues with Naive GEMM
