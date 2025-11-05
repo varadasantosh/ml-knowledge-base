@@ -126,9 +126,9 @@ $$
 $$
 \begin{bmatrix} x'\\\
 y' \end{bmatrix} =
-\begin{bmatrix} \cos\theta & -\sin\theta \\\
+\begin{bmatrix} \cos\theta & -\sin\theta\\\
 \sin\theta & \cos\theta \end{bmatrix}
-\begin{bmatrix} x \\
+\begin{bmatrix} x\\\
 y \end{bmatrix}
 $$
 
