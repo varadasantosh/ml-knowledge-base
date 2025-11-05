@@ -47,11 +47,8 @@ title: "Rotary Positional Embeddings"
   When we multiply Complex Number by i , it results in rotating it by angle 90 degrees, here we represent our Embedding vector in Complex space and multiply it be rotational matrix the anle of the vector changes. Below are the equations of math how this works
 
 - **Step-1**:-
-  <p>
- 
-  <img width="373" alt="image" src="https://github.com/varadasantosh/ml-knowledge-base/blob/main/static/images/transformers/position_encodings/Complex%20Numbers%20as%20Rotations-%20The%20Foundation%20of%20RoPE.png" />
- 
-  </p>
+
+    ![ComplexnumberRotation_RoPE Foundation](/images/transformers/position_encodings/RoPE_Foundation.png)
   
   **cosA= x/r** , **sinA= y/r**
 
