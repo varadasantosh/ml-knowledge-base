@@ -54,8 +54,8 @@ title: "Rotary Positional Embeddings"
 
 $$
 \begin{bmatrix}
-x &\\
-y & \\
+x \\\
+y  \\\
 \end{bmatrix} =
 \begin{bmatrix}
 rcosA\\
@@ -124,7 +124,7 @@ $$
 
 
 $$
-\begin{bmatrix} x' \\
+\begin{bmatrix} x' \\\
 y' \end{bmatrix} =
 \begin{bmatrix} \cos\theta & -\sin\theta \\
 \sin\theta & \cos\theta \end{bmatrix}
@@ -141,7 +141,7 @@ $$
   
 
 $$ R(θ) =
-\begin{bmatrix} \cos\theta & -\sin\theta \\
+\begin{bmatrix} \cos\theta & -\sin\theta \\\
 \sin\theta & \cos\theta \end{bmatrix}
 $$
 
