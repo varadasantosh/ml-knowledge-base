@@ -86,8 +86,8 @@ $$
 
 $$
 \begin{bmatrix}
-x'\\
-y'\\
+x'\\\
+y'
 \end{bmatrix} =
 \begin{bmatrix}
 r (cosA cosθ - sinA sinθ)\\\
@@ -98,8 +98,8 @@ $$
 
 $$
 \begin{bmatrix}
-x'\\
-y'\\
+x'\\\
+y'
 \end{bmatrix} =
 \begin{bmatrix}
 r cosA cosθ - rsinA sinθ\\\
