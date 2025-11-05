@@ -114,7 +114,7 @@ $$
 $$
 \begin{bmatrix}
 x'\\\
-y'\\
+y'
 \end{bmatrix} =
 \begin{bmatrix}
 x cosθ - y sinθ\\\
