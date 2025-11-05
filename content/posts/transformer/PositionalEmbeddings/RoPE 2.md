@@ -234,7 +234,7 @@ $$
 P^T \cdot Q =
 \begin{bmatrix} x_{1} & y_{1} \end{bmatrix}
 \begin{bmatrix}
-\cos(\theta_{1} - \theta_{2}) & -\sin(\theta_{1} - \theta_{2}) \\\
+\cos(\theta_{1} - \theta_{2}) & -\sin(\theta_{1} - \theta_{2})\\\
 \sin(\theta_{1} - \theta_{2}) & \cos(\theta_{1} - \theta_{2})
 \end{bmatrix}
 \begin{bmatrix} x_{2} \\
