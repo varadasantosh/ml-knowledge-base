@@ -117,14 +117,14 @@ x'\\
 y'\\
 \end{bmatrix} =
 \begin{bmatrix}
-x cosθ - y sinθ\\
+x cosθ - y sinθ\\\
 y cosθ + x sinθ\\
 \end{bmatrix}
 $$
 
 
 $$
-\begin{bmatrix} x' \\\
+\begin{bmatrix} x'\\\
 y' \end{bmatrix} =
 \begin{bmatrix} \cos\theta & -\sin\theta \\
 \sin\theta & \cos\theta \end{bmatrix}
