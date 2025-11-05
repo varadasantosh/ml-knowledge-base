@@ -379,7 +379,7 @@ $$
 cos\theta + i*sin\theta =
 \begin{bmatrix}
 cos\theta & - ysin\theta\\\
-cos\theta & sin\theta\\
+cos\theta & sin\theta
 \end{bmatrix}
 $$
 
@@ -401,9 +401,10 @@ The below represents the relative positions between Query & Key Vectors (Token E
 
 $$
 Attention Score  =
-q^T \quad R_{m}^T R_{n} k_= q^T \begin{bmatrix}
+q^T \quad R_{m}^T R_{n} k_= q^T 
+\begin{bmatrix}
 cos(m-n)\theta & - sin(m-n)\theta\\\
-cos(m-n)\theta & sin(m-n)\theta\\
+cos(m-n)\theta & sin(m-n)\theta
 \end{bmatrix}
 \quad
 k
