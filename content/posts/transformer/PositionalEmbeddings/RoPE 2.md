@@ -238,7 +238,8 @@ P^T \cdot Q =
 \sin(\theta_{1} - \theta_{2}) & \cos(\theta_{1} - \theta_{2})
 \end{bmatrix}
 \begin{bmatrix} x_{2}\\\
-y_{2} \end{bmatrix}
+y_{2} 
+\end{bmatrix}
 $$
 
 All of this what we discussed is applicable in 2Dimensional Space, but in practice the LLM have Embedding Dimensions of size 2048 & 3092 etc...
