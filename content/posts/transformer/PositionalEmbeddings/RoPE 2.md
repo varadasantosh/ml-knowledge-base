@@ -71,7 +71,7 @@ $$
 $$
 \begin{bmatrix}
 x'\\\
-y'\\
+y'
 \end{bmatrix} =
 \begin{bmatrix}
 rcos(A+θ)\\\
