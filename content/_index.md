@@ -13,4 +13,4 @@ Explore different sections of my portfolio:
 - 📌 [Transformer Models](transformer/)
 - 📌 [Distributed Training](training/)
 - 📌 [CUDA Progamming](cuda/)
-- 📌 [Generative & Computer Vision Models](computervision/)
+# - 📌 [Generative & Computer Vision Models](computervision/)
