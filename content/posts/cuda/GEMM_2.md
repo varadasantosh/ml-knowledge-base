@@ -119,19 +119,18 @@ Though I mentioned that we can parallelize the whole process by creating multipl
 # Naive CUDA Kernel
 
 
-
 # Configurations for Kernel Launch
 
 Grid and dimensional block configurations can be set using different combinations. The general convention for grid configuration is as follows. For this example, we are considering the configuration **blockDim(32,32)**:
 
     gridDim((N+blockDim.x-1)/blockDim.x, (N+blockDim.y-1)/blockDim.y))
 
-<div style="
-  border: 2px solid #4CAF50; 
-  border-radius: 8px; 
-  overflow: hidden; 
-  margin: 1em 0;
-">
+  <div style="
+    border: 2px solid #4CAF50; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin: 1em 0;
+  ">
 
   <div style="
     background-color: #4CAF50; 
@@ -161,10 +160,10 @@ Grid and dimensional block configurations can be set using different combination
   <b>Max Thread per SM :</b><span style="color: #2e7d32;"><b> 2048</b></span>
   <b>blockDim:</b> <span style="color: #2e7d32;"><b> (32,32) => (x,y)</b></span>
   <b>gridDim:</b> <span style="color: #2e7d32;"><b>(9,9) => (N+blockDim.x-1/blockDim.x, N+blockDim.y-1/blockDim.y)</b></span>
-  <b>L1 Cache :</b> <span style="color: #2e7d32;"><b>32 KB (Considering that total memory Sharable between L1 Cache (Hardware Cache)+ Shared Memory(Software Cache) is 192 KB)</b></span>
+  <b>L1 Cache :</b> <span style="color: #2e7d32;"><b>32 KB (Considering that total memory Sharable between L1 Cache (Hardware Cache)+ Shared    Memory(Software Cache) is 192 KB)</b></span>
 
   </pre>
-</div>
+
 
 
 # Dissecting Naive GEMM:
