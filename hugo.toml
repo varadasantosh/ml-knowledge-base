@@ -20,13 +20,11 @@ theme = "hugo-PaperMod"
 
     enabled = true
     title = "Varada V N A Santosh"
-    subtitle = "ML/AI Engineer"
+
 
     imageWidth = 120
     imageHeight = 120
-    [[params.profileMode.buttons]]
-        name = "About"
-        url = "/about/"    
+   
      [[params.profileMode.buttons]] 
       name = "Blog"
       url = "/posts/"
