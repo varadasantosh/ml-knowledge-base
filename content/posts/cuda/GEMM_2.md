@@ -141,35 +141,12 @@ Grid and dimensional block configurations can be set using different combination
 
 
 <figure>
-  <img src="/images/cuda/gemm_2/grid_layout.png" alt="Thread Block Grid Layout" width="600">
+  <img src="/images/cuda/gemm_2/naive_gemm_grid_layout.png" alt="Thread Block Grid Layout" width="600">
   <figcaption>Figure 1: Thread Block Grid Layout</figcaption>
 </figure>
 <br>
 
 
-<figure>
-  <img src="/images/cuda/gemm_2/thread-block-configuration.png" alt="Thread Block Grid Layout" width="600">
-  <figcaption>Figure 2: Thread Block Configuration</figcaption>
-</figure>
-<br>
-
-<figure>
-  <img src="/images/cuda/gemm_2/thread_layout.png" alt="Thread Block Grid Layout" width="600">
-  <figcaption>Figure 3: Thread Layout</figcaption>
-</figure>
-<br>
-
-<figure>
-  <img src="/images/cuda/gemm_2/block_0_warps.png" alt="Thread Block Grid Layout" width="600">
-  <figcaption>Figure 4: Block(0,0) Warps</figcaption>
-</figure>
-<br>
-
-<figure>
-  <img src="/images/cuda/gemm_2/warp_0_iteration_0access_pattern.png" alt="Thread Block Grid Layout" width="600">
-  <figcaption>Figure 5: Warp-0 Access Pattern</figcaption>
-</figure>
-<br>
 
 
 ## Memory Access Patterns and Coalescing Analysis:
