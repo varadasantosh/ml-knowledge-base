@@ -142,6 +142,7 @@ Grid and dimensional block configurations can be set using different combination
   ![naive_gemm_grid_layout](/images/cuda/gemm_2/naive_gemm_grid_layout.png)
   ![naive gemm thread block config](/images/cuda/gemm_2/thread-block-configuration.png)
   ![naive gemm thread layout](/images/cuda/gemm_2/thread_layout.png)
+  ![naive gemm warp layout](/images/cuda/gemm_2/warp_0_iteration_0access_pattern.png)
 
 ## Memory Access Patterns and Coalescing Analysis:
 
