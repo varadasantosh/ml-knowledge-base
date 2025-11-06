@@ -125,12 +125,6 @@ Grid and dimensional block configurations can be set using different combination
 
     gridDim((N+blockDim.x-1)/blockDim.x, (N+blockDim.y-1)/blockDim.y))
 
-  <div style="
-    border: 2px solid #4CAF50; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    margin: 1em 0;
-  ">
 
   <div style="
     background-color: #4CAF50; 
@@ -142,7 +136,6 @@ Grid and dimensional block configurations can be set using different combination
     Kernel & GPU Configurations
   </div>
 
- 
 
   <b>GPU:</b><span style="color: #2e7d32;"><b> A100</b></span>
   <b>Max Streaming Multiprocessors (SM)</b>: <span style="color: #2e7d32;"><b>108</b></span>
