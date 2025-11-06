@@ -142,16 +142,7 @@ Grid and dimensional block configurations can be set using different combination
     Kernel & GPU Configurations
   </div>
 
-  <!-- White code block -->
-  <pre style="
-    background-color: #ffffff; 
-    color: #2d2d2d; 
-    padding: 16px; 
-    margin: 0; 
-    font-size: 0.95rem; 
-    line-height: 1.5; 
-    overflow-x: auto;
-  ">
+ 
 
   <b>GPU:</b><span style="color: #2e7d32;"><b> A100</b></span>
   <b>Max Streaming Multiprocessors (SM)</b>: <span style="color: #2e7d32;"><b>108</b></span>
@@ -161,9 +152,6 @@ Grid and dimensional block configurations can be set using different combination
   <b>blockDim:</b> <span style="color: #2e7d32;"><b> (32,32) => (x,y)</b></span>
   <b>gridDim:</b> <span style="color: #2e7d32;"><b>(9,9) => (N+blockDim.x-1/blockDim.x, N+blockDim.y-1/blockDim.y)</b></span>
   <b>L1 Cache :</b> <span style="color: #2e7d32;"><b>32 KB (Considering that total memory Sharable between L1 Cache (Hardware Cache)+ Shared    Memory(Software Cache) is 192 KB)</b></span>
-
-  </pre>
-
 
 
 # Dissecting Naive GEMM:
