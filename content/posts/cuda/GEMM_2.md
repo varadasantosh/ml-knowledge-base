@@ -123,28 +123,18 @@ Though I mentioned that we can parallelize the whole process by creating multipl
 
 Grid and dimensional block configurations can be set using different combinations. The general convention for grid configuration is as follows. For this example, we are considering the configuration **blockDim(32,32)**:
 
-    gridDim((N+blockDim.x-1)/blockDim.x, (N+blockDim.y-1)/blockDim.y))
+  gridDim((N+blockDim.x-1)/blockDim.x, (N+blockDim.y-1)/blockDim.y))
 
+  ## Kernel & GPU Configurations
 
-  <div style="
-    background-color: #4CAF50; 
-    color: white; 
-    font-weight: bold; 
-    text-align: center; 
-    padding: 6px 0;
-  ">
-    Kernel & GPU Configurations
-  </div>
-
-
-  <b>GPU:</b><span style="color: #2e7d32;"><b> A100</b></span>
-  <b>Max Streaming Multiprocessors (SM)</b>: <span style="color: #2e7d32;"><b>108</b></span>
-  <b>Max Warps per SM:</b> <span style="color: #2e7d32;"><b> 64</b></span>
-  <b>Max Threads per Thread Block:</b> <span style="color: #2e7d32;"><b> 1024</b></span>
-  <b>Max Thread per SM :</b><span style="color: #2e7d32;"><b> 2048</b></span>
-  <b>blockDim:</b> <span style="color: #2e7d32;"><b> (32,32) => (x,y)</b></span>
-  <b>gridDim:</b> <span style="color: #2e7d32;"><b>(9,9) => (N+blockDim.x-1/blockDim.x, N+blockDim.y-1/blockDim.y)</b></span>
-  <b>L1 Cache :</b> <span style="color: #2e7d32;"><b>32 KB (Considering that total memory Sharable between L1 Cache (Hardware Cache)+ Shared    Memory(Software Cache) is 192 KB)</b></span>
+  **GPU:** A100  
+  **Max Streaming Multiprocessors (SM):** 108  
+  **Max Warps per SM:** 64  
+  **Max Threads per Thread Block:** 1024  
+  **Max Thread per SM:** 2048  
+  **blockDim:** (32,32) => (x,y)  
+  **gridDim:** (9,9) => (N+blockDim.x-1/blockDim.x, N+blockDim.y-1/blockDim.y)  
+  **L1 Cache:** 32 KB (Considering that total memory Sharable between L1 Cache (Hardware Cache)+ Shared Memory(Software Cache) is 192 KB)
 
 
 # Dissecting Naive GEMM:
