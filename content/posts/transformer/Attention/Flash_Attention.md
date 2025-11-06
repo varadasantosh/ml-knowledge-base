@@ -73,16 +73,17 @@ Flash Attention is IO Aware & Exact Attention. To understand this, we need to be
   # [Online Softmax Calculation](https://github.com/varadasantosh/deep-learning-notes/blob/tensorflow/Flash_Attention_Calculations(Online_Softmax).ipynb) 
 
   [Notebook](https://colab.research.google.com/github/varadasantosh/deep-learning-notes/blob/tensorflow/Flash_Attention_Calculations(Online_Softmax).ipynb)
-   
-   Reference Links:-
-
-   1. https://horace.io/brrr_intro.html
-   2. https://training.continuumlabs.ai/inference/why-is-inference-important/flash-attention-2
-   3. https://www.youtube.com/watch?v=IoMSGuiwV3g
-   4. https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad#:~:text=So%20basically%2C%20in%20order%20to,statistics%20for%20each%20of%20the
-   5. https://www.nvidia.com/en-us/on-demand/session/gtc24-s62546/
 
 
 # Illustration of Standard Attention vs Flash Attention from Hugging Face:-
    ------------------
-   ![image](https://github.com/user-attachments/assets/8ce6ec2f-2df2-4d5e-b643-598ba3b27097)
+   ![image](https://github.com/user-attachments/assets/8ce6ec2f-2df2-4d5e-b643-598ba3b27097)  
+   
+# Reference Links:-
+ - https://horace.io/brrr_intro.html
+ - https://training.continuumlabs.ai/inference/why-is-inference-important/flash-attention-2
+ - https://www.youtube.com/watch?v=IoMSGuiwV3g
+ - https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad#:~:text=So%20basically%2C%20in%20order%20to,statistics%20for%20each%20of%20the
+ - https://www.nvidia.com/en-us/on-demand/session/gtc24-s62546/
+
+
