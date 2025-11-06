@@ -26,6 +26,6 @@ theme = "hugo-PaperMod"
     imageHeight = 120
    
      [[params.profileMode.buttons]] 
-      name = "Blog"
+      name = "Notes"
       url = "/posts/"
     
