@@ -1083,30 +1083,3 @@ To optimize memory-bound kernels, the focus is on reducing the amount of data tr
 
 
 
-
-
-
-Outro:-
-------
-
-# References:
-https://siboehm.com/articles/22/CUDA-MMM
-https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/
-https://alvinwan.com/how-to-tile-matrix-multiplication/#how-to-sidestep-tiling-limits
-https://leimao.github.io/article/CUDA-Matrix-Multiplication-Optimization/
-
-https://huggingface.co/spaces/nanotron/ultrascale-playbook?section=high-level_overview
-https://www.youtube.com/watch?v=1E8GDR8QXKw&t=3033s
-
-
-
-https://developer.nvidia.com/blog/introducing-tile-based-programming-in-warp-1-5-0/
-
-https://developer.nvidia.com/blog/cutlass-principled-abstractions-for-handling-multidimensional-data-through-tensors-and-spatial-microkernels/
-
-https://developer.nvidia.com/blog/accelerating-transformers-with-nvidia-cudnn-9/
-https://developer.nvidia.com/blog/advanced-optimization-strategies-for-llm-training-on-nvidia-grace-hopper/
-https://developer.nvidia.com/blog/profiling-llm-training-workflows-on-nvidia-grace-hopper/
-
-
-https://github.com/NVIDIA-developer-blog/code-samples/blob/master/posts/tensor-cores/simpleTensorCoreGEMM.cu
