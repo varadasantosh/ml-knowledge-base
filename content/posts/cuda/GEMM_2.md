@@ -323,10 +323,6 @@ Block(0,255):  C[255][0] =  A[255][0] * B[0][0]  + A[255][1] * B[1][0]  + ... + 
 </div>
 
 # Naive GEMM Code
-
-update
-
-<code>
   
   <div style="
     border: 2px solid #4CAF50; 
@@ -449,7 +445,7 @@ int main() {
     
     return 0;
 }
-</code>
+
 
 # Summary
 
