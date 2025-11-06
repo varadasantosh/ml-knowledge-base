@@ -28,6 +28,6 @@ theme = "hugo-PaperMod"
         name = "About"
         url = "/about/"    
      [[params.profileMode.buttons]] 
-      name = "Blog"
+      name = "Notes"
       url = "/posts/"
     
