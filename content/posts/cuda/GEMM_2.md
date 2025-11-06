@@ -379,6 +379,8 @@ Shared memory tiling will enable explicit data reuse management, transforming th
 
 
 # References:
-https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/#hierarchical_gemm_structure
-https://doc.sling.si/en/workshops/programming-gpu-cuda/01-intro/01-course/
+- https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/#hierarchical_gemm_structure
+- https://doc.sling.si/en/workshops/programming-gpu-cuda/01-intro/01-course/
+- https://siboehm.com/articles/22/CUDA-MMM
+- https://leimao.github.io/article/CUDA-Matrix-Multiplication-Optimization/
 
