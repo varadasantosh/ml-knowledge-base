@@ -139,15 +139,7 @@ Grid and dimensional block configurations can be set using different combination
 
 # Dissecting Naive GEMM:
 
-
-<figure>
-  <img src="/images/cuda/gemm_2/naive_gemm_grid_layout.png" alt="Thread Block Grid Layout" width="600">
-  <figcaption>Figure 1: Thread Block Grid Layout</figcaption>
-</figure>
-<br>
-
-
-
+  ![naive_gemm_grid_layout](/images/cuda/gemm_2/naive_gemm_grid_layout.png)
 
 ## Memory Access Patterns and Coalescing Analysis:
 
