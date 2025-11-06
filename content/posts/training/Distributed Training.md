@@ -7,13 +7,7 @@ title: "Distributed Training"
 
 <!--more-->
 
-# Reference Articles
-  - https://tinkerd.net/blog/machine-learning/distributed-training/
-  - https://www.youtube.com/watch?v=toUSzwR0EV8&t=2s
-  - https://github.com/huggingface/blog/blob/main/pytorch-fsdp.md
-  - https://blog.clika.io/fsdp-1/
-
-Before exploring the different techniques of Distributed Training, it is essential to understand why it is needed.
+Before diving deeper into understanding different techniques of Distributed Training, it is essential to understand why it is needed.
 
 With advancements in both technology and hardware & availability of data  the size of deep learning models has grown significantly. Modern Large Language Models (LLMs) are trained on massive datasets and have billions of parameters, making them too large to fit within the memory of a single GPU.
 
@@ -156,7 +150,11 @@ Two Layers , each with Matrices $W_{1}$, $W_{2}$ with below dimensions
   ---------------
   ![image](https://github.com/user-attachments/assets/3b773598-b5b8-457c-aa45-c6995935c641)
 
-
+# Reference Articles
+  - https://tinkerd.net/blog/machine-learning/distributed-training/
+  - https://www.youtube.com/watch?v=toUSzwR0EV8&t=2s
+  - https://github.com/huggingface/blog/blob/main/pytorch-fsdp.md
+  - https://blog.clika.io/fsdp-1/
 
 
 
