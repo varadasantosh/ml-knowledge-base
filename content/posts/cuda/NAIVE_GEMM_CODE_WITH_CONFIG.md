@@ -1,6 +1,6 @@
 
 ---
-title: "Naive Matrix Multiplication"
+title: "Naive GEMM CODE - Grid & Thread Block Dimensions "
 ---
 
 <!--more-->
